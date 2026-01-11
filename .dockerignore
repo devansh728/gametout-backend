@@ -1,6 +1,10 @@
 .gradle
-build
-out
-node_modules
 .git
-*.log
+.gitignore
+node_modules
+logs
+
+# Ignore everything in build EXCEPT JAR
+build/*
+!build/libs/
+!build/libs/*.jar
