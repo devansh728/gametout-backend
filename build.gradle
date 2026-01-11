@@ -1,0 +1,104 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.3.4'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.graalvm.buildtools.native' version '0.11.3'
+}
+
+group = 'com.gametout'
+version = '0.0.1-SNAPSHOT'
+description = 'backend for gametout'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:2023.0.3"
+        mavenBom "software.amazon.awssdk:bom:2.25.10"
+        mavenBom "com.google.cloud:libraries-bom:26.31.0"
+    }
+}
+
+graalvmNative {
+    binaries {
+        main {
+            imageName = "gametout"
+            buildArgs.add("--no-fallback")
+            buildArgs.add("--enable-http")
+            buildArgs.add("--enable-https")
+            buildArgs.add("-J-Xms512m")
+            buildArgs.add("-J-Xmx3g")
+            buildArgs.add("--gc=serial")
+            buildArgs.add("--initialize-at-run-time=org.apache.commons.logging.LogFactory")
+            buildArgs.add("--initialize-at-run-time=org.apache.commons.logging.LogFactoryService")
+        }
+    }
+}
+
+
+dependencies {
+    // Web
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    implementation 'org.springframework.boot:spring-boot-starter-logging'
+
+    // Persistence
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'org.postgresql:postgresql'
+
+    // Cache & Redis
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation('com.google.firebase:firebase-admin:9.2.0') {
+        exclude group: 'commons-logging', module: 'commons-logging'
+    }
+
+    // Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+
+    // Actuator
+    // implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // Resilience
+    implementation 'io.github.resilience4j:resilience4j-spring-boot3:2.2.0'
+    implementation 'io.github.resilience4j:resilience4j-circuitbreaker:2.2.0'
+    implementation 'io.github.resilience4j:resilience4j-ratelimiter:2.2.0'
+
+    // Storage (S3 / MinIO)
+    implementation('software.amazon.awssdk:s3') {
+        exclude group: 'commons-logging', module: 'commons-logging'
+    }
+
+    // DB Migration
+    implementation 'org.flywaydb:flyway-core:10.15.0'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Tests
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

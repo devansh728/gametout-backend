@@ -1,0 +1,58 @@
+package com.gametout.gametout.repository;
+import com.gametout.gametout.enums.JobCategory;
+import com.gametout.gametout.entity.PortfolioProfile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+import java.util.Optional;
+
+@Repository
+public interface PortfolioRepository extends JpaRepository<PortfolioProfile, Long> {
+
+    Optional<PortfolioProfile> findByUserId(Long userId);
+
+    @Query("""
+    SELECT p FROM PortfolioProfile p
+    LEFT JOIN FETCH p.resume
+    LEFT JOIN FETCH p.user
+    WHERE p.jobCategory = :category
+    ORDER BY
+        CASE WHEN p.isPremium = true THEN 0 ELSE 1 END,  
+        p.likesCount DESC, 
+        p.createdAt DESC  
+    """)
+    Page<PortfolioProfile> listByCategory(
+        @Param("category") JobCategory category,
+        Pageable pageable
+    );
+
+    @Modifying
+    @Query("UPDATE PortfolioProfile p SET p.likesCount = p.likesCount + 1 WHERE p.id = :id")
+    void incrementLikes(@Param("id") Long id);
+
+    @Modifying
+    @Query("UPDATE PortfolioProfile p SET p.likesCount = p.likesCount - 1 WHERE p.id = :id")
+    void decrementLikes(@Param("id") Long id);
+
+    @Query("""
+        SELECT p FROM PortfolioProfile p
+        LEFT JOIN FETCH p.user
+        LEFT JOIN FETCH p.resume
+        WHERE p.id = :id
+    """)
+    Optional<PortfolioProfile> findByIdWithDetails(@Param("id") Long id);
+
+    @Query("""
+        SELECT p FROM PortfolioProfile p
+        LEFT JOIN FETCH p.user
+        LEFT JOIN FETCH p.resume
+        WHERE p.isPremium = true
+        ORDER BY p.likesCount DESC, p.createdAt DESC
+    """)
+    Page<PortfolioProfile> findByIsPremiumTrue(Pageable pageable);
+}
+
