@@ -1,7 +1,7 @@
 FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
-COPY build/libs/*-boot.jar app.jar
+COPY build/libs/*.jar app.jar
 
 ENV JAVA_OPTS="-Xms128m -Xmx384m \
 -XX:MaxMetaspaceSize=128m \
