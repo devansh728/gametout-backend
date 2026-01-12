@@ -10,4 +10,4 @@ ENV JAVA_OPTS="-Xms128m -Xmx384m \
 -XX:+ExitOnOutOfMemoryError"
 
 EXPOSE 8080
-ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar app.jar"]
+ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar app.jar --debug"]

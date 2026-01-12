@@ -17,7 +17,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: false
     open-in-view: false
     properties:
@@ -52,7 +52,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: health,info,metrics,prometheus,threaddump
   endpoint:
     health:
       show-details: when_authorized
@@ -98,9 +98,9 @@ storage:
 
 logging:
   level:
-    root: INFO
-    "[org.springframework.web]": INFO
-    "[org.hibernate.SQL]": INFO
+    root: DEBUG
+    "[org.springframework.web]": DEBUG
+    "[org.hibernate.SQL]": DEBUG
     "[org.hibernate.orm.jdbc.bind]": TRACE
   file:
     name: logs/${spring.application.name}.log
