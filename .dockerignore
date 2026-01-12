@@ -4,10 +4,10 @@
 node_modules
 logs
 
-# Ignore everything in build
-build/**
-
-# Re-include build/libs and JARs
-!build/
+# Ignore build output EXCEPT jar
+build/*
 !build/libs/
 !build/libs/*.jar
+
+*.env
+secrets/firebase.json
