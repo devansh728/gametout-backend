@@ -4,7 +4,10 @@
 node_modules
 logs
 
-# Ignore everything in build EXCEPT JAR
-build/*
+# Ignore everything in build
+build/**
+
+# Re-include build/libs and JARs
+!build/
 !build/libs/
 !build/libs/*.jar
