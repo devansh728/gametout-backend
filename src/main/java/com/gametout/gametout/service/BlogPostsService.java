@@ -29,8 +29,8 @@ public class BlogPostsService {
     private final PostRepository repository;
     private final BlogPostMapper mapper;
 
-
-    public BlogPostsService(PostRepository repository, RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper) {
+    public BlogPostsService(PostRepository repository, RedisTemplate<String, Object> redisTemplate,
+            ObjectMapper objectMapper) {
         this.repository = repository;
         this.mapper = new BlogPostMapper();
     }
@@ -83,8 +83,8 @@ public class BlogPostsService {
     }
 
     public record BlogPostFeedList(
-        List<BlogPostFeedDTO> posts
-    ) implements Serializable {}
+            List<BlogPostFeedDTO> posts) implements Serializable {
+    }
 
     @Cacheable(value = "typeFeed", key = "'type:' + #type")
     @Transactional(readOnly = true)
@@ -96,7 +96,25 @@ public class BlogPostsService {
         List<BlogPostFeedDTO> result = posts.stream()
                 .map(this::toFeedDTO)
                 .collect(Collectors.toList());
-        return new BlogPostFeedList(result);        
+        return new BlogPostFeedList(result);
+    }
+
+    /*
+     * ================================
+     * COUNT APIs (CACHED)
+     * ================================
+     */
+
+    @Cacheable(value = "post:count", key = "'type:' + #type")
+    @Transactional(readOnly = true)
+    public long getCountByType(PostEnum type) {
+        return repository.countByPostTypeAndPostStatus(type, PostStatus.PUBLISHED);
+    }
+
+    @Cacheable(value = "post:count", key = "'total'")
+    @Transactional(readOnly = true)
+    public long getTotalCount() {
+        return repository.countByPostStatus(PostStatus.PUBLISHED);
     }
 
     /*
@@ -106,13 +124,13 @@ public class BlogPostsService {
      */
 
     @Transactional
-    @CacheEvict(value = { "feed", "post", "typeFeed" }, allEntries = true)
+    @CacheEvict(value = { "feed", "post", "typeFeed", "post:count" }, allEntries = true)
     public BlogPosts create(BlogPosts post) {
         return repository.save(post);
     }
 
     @Transactional
-    @CacheEvict(value = { "feed", "post", "typeFeed" }, key = "'post:' + #post.id")
+    @CacheEvict(value = { "feed", "post", "typeFeed", "post:count" }, key = "'post:' + #post.id")
     public BlogPosts update(BlogPosts post) {
         return repository.save(post);
     }

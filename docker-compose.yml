@@ -4,6 +4,7 @@ services:
   app:
     image: devu728/gametout-backend:latest
     container_name: gametout-app
+    restart: always
     ports:
       - "8080:8080"
     env_file:
@@ -12,29 +13,29 @@ services:
       - ./secrets/firebase.json:/secrets/firebase.json:ro
     environment:
       JAVA_OPTS: >
-        -Xms128m
-        -Xmx320m
-        -XX:MaxMetaspaceSize=96m
-        -XX:+UseSerialGC
+        -Xms256m
+        -Xmx768m
+        -XX:MaxMetaspaceSize=192m
+        -XX:+UseG1GC
+        -XX:MaxGCPauseMillis=200
         -XX:+ExitOnOutOfMemoryError
     depends_on:
       redis:
         condition: service_healthy
       minio:
         condition: service_healthy
-    restart: always
-    mem_limit: 320m
+    mem_limit: 900m
     networks:
       - app-network
 
   redis:
     image: redis:7-alpine
     container_name: gametout-redis
+    restart: always
     command: >
       redis-server
       --maxmemory 48mb
       --maxmemory-policy allkeys-lru
-    restart: always
     mem_limit: 48m
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -48,12 +49,14 @@ services:
     image: quay.io/minio/minio
     container_name: gametout-minio
     command: server /data
+    restart: always
+    ports:
+      - "9000:9000"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     volumes:
       - minio-data:/data
-    restart: always
     mem_limit: 96m
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -69,3 +72,249 @@ volumes:
 networks:
   app-network:
     driver: bridge
+
+
+# version: "3.9"
+
+# services:
+#   tunnel:
+#     image: cloudflare/cloudflared:latest
+#     container_name: gametout-tunnel
+#     restart: always
+#     command: tunnel run
+#     environment:
+#       - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+#     networks:
+#       - app-network
+#   app:
+#     image: devu728/gametout-backend:local
+#     container_name: gametout-app
+#     ports:
+#       - "8080:8080"
+#     env_file:
+#       - .env
+#     volumes:
+#       - ./secrets/firebase.json:/secrets/firebase.json:ro
+#     extra_hosts:
+#       - "host.docker.internal:host-gateway"
+#     dns:
+#       - 8.8.8.8
+#       - 8.8.4.4
+#     environment:
+#       JAVA_OPTS: >
+#         -Xms256m
+#         -Xmx512m
+#         -XX:MaxMetaspaceSize=192m
+#         -XX:+UseSerialGC
+#         -XX:+ExitOnOutOfMemoryError
+#       REDIS_HOST: redis
+#       STORAGE_ENDPOINT: http://minio:9000
+#       STORAGE_PUBLIC_ENDPOINT: https://files.thegametout.com
+#     depends_on:
+#       redis:
+#         condition: service_healthy
+#       minio:
+#         condition: service_healthy
+#     networks:
+#       - app-network
+
+#   redis:
+#     image: redis:7-alpine
+#     container_name: gametout-redis
+#     ports:
+#       - "6379:6379"
+#     command: >
+#       redis-server
+#       --maxmemory 48mb
+#       --maxmemory-policy allkeys-lru
+#     restart: always
+#     mem_limit: 48m
+#     healthcheck:
+#       test: ["CMD", "redis-cli", "ping"]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 5
+#     networks:
+#       - app-network
+
+#   minio:
+#     image: quay.io/minio/minio
+#     container_name: gametout-minio
+#     ports:
+#       - "9000:9000"
+#     command: server /data
+#     environment:
+#       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+#       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+#     volumes:
+#       - minio-data:/data
+#     restart: always
+#     mem_limit: 96m
+#     healthcheck:
+#       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+#       interval: 30s
+#       timeout: 10s
+#       retries: 3
+#     networks:
+#       - app-network
+
+# volumes:
+#   minio-data:
+
+# networks:
+#   app-network:
+#     driver: bridge
+
+
+# --------------------------------------------------the upper is for local deployment
+
+
+# version: "3.9"
+
+# services:
+#   app:
+#     image: devu728/gametout-backend:latest
+#     container_name: gametout-app
+#     ports:
+#       - "8080:8080"
+#     env_file:
+#       - .env
+#     volumes:
+#       - ./secrets/firebase.json:/secrets/firebase.json:ro
+#     environment:
+#       JAVA_OPTS: >
+#         -Xms128m
+#         -Xmx320m
+#         -XX:MaxMetaspaceSize=96m
+#         -XX:+UseSerialGC
+#         -XX:+ExitOnOutOfMemoryError
+#     depends_on:
+#       redis:
+#         condition: service_healthy
+#       minio:
+#         condition: service_healthy
+#     restart: always
+#     mem_limit: 320m
+#     networks:
+#       - app-network
+
+#   redis:
+#     image: redis:7-alpine
+#     container_name: gametout-redis
+#     command: >
+#       redis-server
+#       --maxmemory 48mb
+#       --maxmemory-policy allkeys-lru
+#     restart: always
+#     mem_limit: 48m
+#     healthcheck:
+#       test: ["CMD", "redis-cli", "ping"]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 5
+#     networks:
+#       - app-network
+
+#   minio:
+#     image: quay.io/minio/minio
+#     container_name: gametout-minio
+#     command: server /data
+#     environment:
+#       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+#       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+#     volumes:
+#       - minio-data:/data
+#     restart: always
+#     mem_limit: 96m
+#     healthcheck:
+#       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+#       interval: 30s
+#       timeout: 10s
+#       retries: 3
+#     networks:
+#       - app-network
+
+# volumes:
+#   minio-data:
+
+# networks:
+#   app-network:
+#     driver: bridge
+
+# --Agent Copilot recommendation
+# version: "3.9"
+
+# services:
+#   app:
+#     image: devu728/gametout-backend:latest
+#     container_name: gametout-app
+#     ports:
+#       - "8080:8080"
+#     env_file:
+#       - .env
+#     volumes:
+#       - ./secrets/firebase.json:/secrets/firebase.json:ro
+#     dns:
+#       - 8.8.8.8
+#       - 8.8.4.4
+#     environment:
+#       JAVA_OPTS: >
+#         -Xms64m
+#         -Xmx192m
+#         -XX:MaxMetaspaceSize=64m
+#         -XX:+UseSerialGC
+#         -XX:+ExitOnOutOfMemoryError
+#         -XX:+TieredCompilation
+#         -XX:TieredStopAtLevel=1
+#     depends_on:
+#       redis:
+#         condition: service_healthy
+#       minio:
+#         condition: service_healthy
+#     restart: always
+#     mem_limit: 256m
+#     networks:
+#       - app-network
+
+#   redis:
+#     image: redis:7-alpine
+#     container_name: gametout-redis
+#     command: >
+#       redis-server
+#       --maxmemory 32mb
+#       --maxmemory-policy allkeys-lru
+#     restart: always
+#     mem_limit: 40m
+#     healthcheck:
+#       test: ["CMD", "redis-cli", "ping"]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 5
+#     networks:
+#       - app-network
+
+#   minio:
+#     image: quay.io/minio/minio
+#     container_name: gametout-minio
+#     command: server /data
+#     environment:
+#       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+#       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+#     volumes:
+#       - minio-data:/data
+#     restart: always
+#     mem_limit: 80m
+#     healthcheck:
+#       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+#       interval: 30s
+#       timeout: 10s
+#       retries: 3
+#     networks:
+#       - app-network
+
+# volumes:
+#   minio-data:
+
+# networks:
+#   app-network:
+#     driver: bridge

@@ -1,4 +1,5 @@
 package com.gametout.gametout.service;
+
 import com.gametout.gametout.dto.PortfolioPageResponse;
 import com.gametout.gametout.dto.PortfolioRequest;
 import com.gametout.gametout.dto.PortfolioResponseDTO;
@@ -11,7 +12,7 @@ import com.gametout.gametout.entity.UserAccount;
 import com.gametout.gametout.enums.JobCategory;
 import com.gametout.gametout.enums.UserRole;
 import com.gametout.gametout.repository.PortfolioRepository;
-import com.gametout.gametout.repository.PortfolioSkillRepository;   
+import com.gametout.gametout.repository.PortfolioSkillRepository;
 import com.gametout.gametout.repository.PortfolioSocialRepository;
 import com.gametout.gametout.entity.PortfolioLike;
 import org.springframework.cache.annotation.CacheEvict;
@@ -26,9 +27,13 @@ import com.gametout.gametout.repository.PortfolioResumeRepository;
 import com.gametout.gametout.repository.PortfolioLikeRepository;
 import org.springframework.security.core.Authentication;
 import com.gametout.gametout.dto.AuthenticatedUser;
+import lombok.RequiredArgsConstructor;
+
+import java.util.Optional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class PortfolioService {
 
     private final PortfolioRepository portfolioRepo;
@@ -37,34 +42,21 @@ public class PortfolioService {
     private final PortfolioResumeRepository resumeRepo;
     private final PortfolioLikeRepository likeRepo;
 
-
-    public PortfolioService(
-        PortfolioRepository portfolioRepo,
-        PortfolioSkillRepository skillRepo,
-        PortfolioSocialRepository socialRepo,
-        PortfolioResumeRepository resumeRepo,
-        PortfolioLikeRepository likeRepo
-    ) {
-        this.portfolioRepo = portfolioRepo;
-        this.skillRepo = skillRepo;
-        this.socialRepo = socialRepo;
-        this.resumeRepo = resumeRepo;
-        this.likeRepo = likeRepo;
-    }
-
-    @CacheEvict(value = "portfolio:list", allEntries = true)
+    @CacheEvict(value = { "portfolio:list", "portfolio:user", "portfolio:count" }, allEntries = true)
     public PortfolioProfile createOrUpdate(
             UserAccount user,
-            PortfolioRequest req
-    ) {
-        PortfolioProfile portfolio =
-            portfolioRepo.findByUserId(user.getId())
+            PortfolioRequest req) {
+        PortfolioProfile portfolio = portfolioRepo.findByUserId(user.getId())
                 .orElseGet(() -> {
                     PortfolioProfile p = new PortfolioProfile();
                     p.setUser(user);
-                    p.setPremium(user.getRole() == UserRole.PREMIUM);
+                    // Premium is set based on user's subscription
+                    p.setPremium(user.canCreatePremiumPortfolio());
                     return p;
                 });
+
+        // Update premium status on each save based on current subscription
+        portfolio.setPremium(user.canCreatePremiumPortfolio());
 
         portfolio.setName(req.name());
         portfolio.setShortDescription(req.shortDescription());
@@ -107,15 +99,11 @@ public class PortfolioService {
         return saved;
     }
 
-    @Cacheable(
-        value = "portfolio:list",
-        key = "#category + ':' + #pageable.pageNumber"
-    )
+    @Cacheable(value = "portfolio:list", key = "#category + ':' + #pageable.pageNumber")
     @Transactional(readOnly = true)
     public PortfolioPageResponse list(
-        JobCategory category,
-        Pageable pageable
-    ) {
+            JobCategory category,
+            Pageable pageable) {
         Page<PortfolioProfile> page = portfolioRepo.listByCategory(category, pageable);
         Page<PortfolioResponseDTO> result = page.map(p -> {
             PortfolioResponseDTO dto = new PortfolioResponseDTO();
@@ -134,15 +122,12 @@ public class PortfolioService {
             dto.setProfilePhotoUrl(p.getProfilePhotoUrl());
             dto.setContactEmail(p.getContactEmail());
             dto.setResumeUrl(
-                p.getResume() != null ? p.getResume().getResumeUrl() : null
-            );
+                    p.getResume() != null ? p.getResume().getResumeUrl() : null);
             dto.setSkills(p.getSkills().stream()
-                .map(s -> new SkillDTO(s.getSkillName(), s.getScore()))
-                .toList()
-            );
+                    .map(s -> new SkillDTO(s.getSkillName(), s.getScore()))
+                    .toList());
             dto.setSocials(
-                p.getSocialLinks().stream().map(s -> new SocialLinkDTO(s.getPlatform(), s.getUrl())).toList()
-            );
+                    p.getSocialLinks().stream().map(s -> new SocialLinkDTO(s.getPlatform(), s.getUrl())).toList());
             return dto;
         });
         return new PortfolioPageResponse(result);
@@ -171,7 +156,7 @@ public class PortfolioService {
         }
 
         // portfolioRepo.findById(portfolioId).ifPresent(p -> {
-        //     p.setLikesCount(p.getLikesCount() + 1);
+        // p.setLikesCount(p.getLikesCount() + 1);
         // });
     }
 
@@ -179,7 +164,7 @@ public class PortfolioService {
     @Cacheable(value = "portfolio:detail", key = "#id")
     public PortfolioResponseDTO findById(Long id) {
         PortfolioProfile p = portfolioRepo.findByIdWithDetails(id)
-            .orElseThrow(() -> new RuntimeException("Portfolio not found"));
+                .orElseThrow(() -> new RuntimeException("Portfolio not found"));
 
         PortfolioResponseDTO dto = new PortfolioResponseDTO();
         dto.setId(p.getId());
@@ -197,24 +182,21 @@ public class PortfolioService {
         dto.setProfilePhotoUrl(p.getProfilePhotoUrl());
         dto.setContactEmail(p.getContactEmail());
         dto.setResumeUrl(
-            p.getResume() != null ? p.getResume().getResumeUrl() : null
-        );
+                p.getResume() != null ? p.getResume().getResumeUrl() : null);
         dto.setSkills(p.getSkills().stream()
-            .map(s -> new SkillDTO(s.getSkillName(), s.getScore()))
-            .toList()
-        );
+                .map(s -> new SkillDTO(s.getSkillName(), s.getScore()))
+                .toList());
         dto.setSocials(
-            p.getSocialLinks().stream().map(s -> new SocialLinkDTO(s.getPlatform(), s.getUrl())).toList()
-        );
+                p.getSocialLinks().stream().map(s -> new SocialLinkDTO(s.getPlatform(), s.getUrl())).toList());
         return dto;
     }
 
     public PortfolioPageResponse getPremiumPortfolios(Authentication authuser, Pageable pageable) {
-        if(authuser == null || !authuser.isAuthenticated()) {
+        if (authuser == null || !authuser.isAuthenticated()) {
             throw new RuntimeException("Authentication required");
         }
         UserAccount user = ((AuthenticatedUser) authuser.getPrincipal()).getUser();
-        if(user.getRole() != UserRole.ADMIN) {
+        if (user.getRole() != UserRole.ADMIN) {
             throw new RuntimeException("ADMIN role required");
         }
         Page<PortfolioProfile> premiumPortfolios = portfolioRepo.findByIsPremiumTrue(pageable);
@@ -235,19 +217,95 @@ public class PortfolioService {
             dto.setProfilePhotoUrl(p.getProfilePhotoUrl());
             dto.setContactEmail(p.getContactEmail());
             dto.setResumeUrl(
-                p.getResume() != null ? p.getResume().getResumeUrl() : null
-            );
+                    p.getResume() != null ? p.getResume().getResumeUrl() : null);
             dto.setSkills(p.getSkills().stream()
-                .map(s -> new SkillDTO(s.getSkillName(), s.getScore()))
-                .toList()
-            );
+                    .map(s -> new SkillDTO(s.getSkillName(), s.getScore()))
+                    .toList());
             dto.setSocials(
-                p.getSocialLinks().stream().map(s -> new SocialLinkDTO(s.getPlatform(), s.getUrl())).toList()
-            );
+                    p.getSocialLinks().stream().map(s -> new SocialLinkDTO(s.getPlatform(), s.getUrl())).toList());
             return dto;
         });
         return new PortfolioPageResponse(dtos);
 
     }
-}
 
+    /**
+     * Get current user's own portfolio for editing
+     */
+    @Transactional(readOnly = true)
+    @Cacheable(value = "portfolio:user", key = "#userId")
+    public Optional<PortfolioResponseDTO> getMyPortfolio(Long userId) {
+        return portfolioRepo.findByUserId(userId)
+                .map(this::convertToDTO);
+    }
+
+    /**
+     * Check if user owns a portfolio
+     */
+    @Transactional(readOnly = true)
+    public boolean isOwner(Long portfolioId, Long userId) {
+        return portfolioRepo.findById(portfolioId)
+                .map(p -> p.getUser().getId().equals(userId))
+                .orElse(false);
+    }
+
+    /**
+     * Upgrade portfolio to premium (called after payment verification)
+     */
+    @CacheEvict(value = { "portfolio:list", "portfolio:user", "portfolio:detail" }, allEntries = true)
+    public void upgradeToPremium(Long userId) {
+        portfolioRepo.findByUserId(userId).ifPresent(portfolio -> {
+            portfolio.setPremium(true);
+            portfolioRepo.save(portfolio);
+        });
+    }
+
+    /**
+     * Downgrade portfolio from premium (called when subscription expires)
+     */
+    @CacheEvict(value = { "portfolio:list", "portfolio:user", "portfolio:detail" }, allEntries = true)
+    public void downgradeFromPremium(Long userId) {
+        portfolioRepo.findByUserId(userId).ifPresent(portfolio -> {
+            portfolio.setPremium(false);
+            portfolioRepo.save(portfolio);
+        });
+    }
+
+    /**
+     * Convert PortfolioProfile entity to DTO
+     */
+    /**
+     * Get total count of portfolios (cached)
+     */
+    @Cacheable(value = "portfolio:count", key = "'total'")
+    @Transactional(readOnly = true)
+    public long getTotalCount() {
+        return portfolioRepo.count();
+    }
+
+    private PortfolioResponseDTO convertToDTO(PortfolioProfile p) {
+        PortfolioResponseDTO dto = new PortfolioResponseDTO();
+        dto.setId(p.getId());
+        dto.setUser(p.getUser());
+        dto.setName(p.getName());
+        dto.setShortDescription(p.getShortDescription());
+        dto.setLocation(p.getLocation());
+        dto.setExperienceYears(p.getExperienceYears());
+        dto.setJobCategory(p.getJobCategory());
+        dto.setJobStatus(p.getJobStatus());
+        dto.setPremium(p.isPremium());
+        dto.setProfileSummary(p.getProfileSummary());
+        dto.setLikesCount(p.getLikesCount());
+        dto.setCoverPhotoUrl(p.getCoverPhotoUrl());
+        dto.setProfilePhotoUrl(p.getProfilePhotoUrl());
+        dto.setContactEmail(p.getContactEmail());
+        dto.setResumeUrl(
+                p.getResume() != null ? p.getResume().getResumeUrl() : null);
+        dto.setSkills(p.getSkills().stream()
+                .map(s -> new SkillDTO(s.getSkillName(), s.getScore()))
+                .toList());
+        dto.setSocials(
+                p.getSocialLinks().stream().map(s -> new SocialLinkDTO(s.getPlatform(), s.getUrl())).toList());
+        return dto;
+    }
+}

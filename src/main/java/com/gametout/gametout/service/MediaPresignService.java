@@ -25,19 +25,19 @@ public class MediaPresignService {
     private final S3Presigner presigner;
     private final String bucket;
     private final S3Client s3Client;
-    private final String endpoint;
+    private final String publicEndpoint;
 
     public MediaPresignService(
             S3Presigner presigner,
             S3Client s3Client,
             @Value("${storage.bucket}") String bucket,
-            @Value("${storage.endpoint}") String endpoint
+            @Value("${storage.public-endpoint}") String publicEndpoint
 
     ) {
         this.presigner = presigner;
         this.bucket = bucket;
         this.s3Client = s3Client;
-        this.endpoint = endpoint;
+        this.publicEndpoint = publicEndpoint;
     }
 
     @PostConstruct
@@ -127,7 +127,7 @@ public class MediaPresignService {
     }
 
     public String getPublicUrl(String objectKey) {
-        String cleanEndpoint = endpoint.endsWith("/") ? endpoint.substring(0, endpoint.length() - 1) : endpoint;
+        String cleanEndpoint = publicEndpoint.endsWith("/") ? publicEndpoint.substring(0, publicEndpoint.length() - 1) : publicEndpoint;
         return String.format("%s/%s/%s", cleanEndpoint, bucket, objectKey);
     }
 }

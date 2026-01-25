@@ -15,6 +15,8 @@ import com.gametout.gametout.enums.PostEnum;
 import com.gametout.gametout.enums.PostStatus;
 import com.gametout.gametout.service.BlogPostsService;
 import com.gametout.gametout.service.BlogPostsService.BlogPostFeedList;
+import org.springframework.http.ResponseEntity;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -27,9 +29,11 @@ public class BlogPostsController {
         this.service = service;
     }
 
-    /* =========================
-       MAIN FEED
-       ========================= */
+    /*
+     * =========================
+     * MAIN FEED
+     * =========================
+     */
 
     @GetMapping
     // @CircuitBreaker(name = "contentService", fallbackMethod = "feedFallback")
@@ -37,13 +41,11 @@ public class BlogPostsController {
     public List<BlogPostFeedDTO> getFeed(
             @RequestParam(defaultValue = "PUBLISHED") PostStatus status,
             @RequestParam(required = false) LocalDateTime cursor,
-            @RequestParam(defaultValue = "20") int size
-    ) {
+            @RequestParam(defaultValue = "20") int size) {
         List<BlogPostFeedDTO> posts = service.getFeed(
                 status,
                 cursor != null ? cursor : LocalDateTime.now(),
-                size
-        );
+                size);
         log.info("Fetched {} posts", posts.size());
         log.info("Posts: {}", posts);
         return posts;
@@ -53,14 +55,15 @@ public class BlogPostsController {
             PostStatus status,
             LocalDateTime cursor,
             int size,
-            Throwable ex
-    ) {
+            Throwable ex) {
         return List.of(); // degrade gracefully
     }
 
-    /* =========================
-       FULL SINGLE POST WITH BLOCKS
-       ========================= */
+    /*
+     * =========================
+     * FULL SINGLE POST WITH BLOCKS
+     * =========================
+     */
 
     @GetMapping("/{id}")
     @CircuitBreaker(name = "contentService")
@@ -68,26 +71,46 @@ public class BlogPostsController {
         return service.getPublishedPost(id);
     }
 
-    /* =========================
-       TYPE FILTER
-       ========================= */
+    /*
+     * =========================
+     * TYPE FILTER
+     * =========================
+     */
 
     @GetMapping("/type/{type}")
     @CircuitBreaker(name = "contentService")
     public BlogPostFeedList getByType(
             @PathVariable PostEnum type,
-            @RequestParam(defaultValue = "10") int size
-    ) {
+            @RequestParam(defaultValue = "10") int size) {
         return service.getByType(type, size);
     }
 
-    /* =========================
-       LIKE
-       ========================= */
+    /*
+     * =========================
+     * LIKE
+     * =========================
+     */
 
     @PostMapping("/{id}/like")
     @RateLimiter(name = "contentLimiter")
     public void like(@PathVariable Long id) {
         service.likePost(id);
+    }
+    /*
+     * =========================
+     * COUNT APIs
+     * =========================
+     */
+
+    @GetMapping("/count/{type}")
+    public ResponseEntity<Map<String, Long>> getCountByType(@PathVariable PostEnum type) {
+        long count = service.getCountByType(type);
+        return ResponseEntity.ok(Map.of("count", count));
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity<Map<String, Long>> getTotalCount() {
+        long count = service.getTotalCount();
+        return ResponseEntity.ok(Map.of("count", count));
     }
 }

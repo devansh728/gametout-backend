@@ -1,4 +1,6 @@
 package com.gametout.gametout.entity;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gametout.gametout.enums.JobCategory;
 import com.gametout.gametout.enums.JobProfileStatus;
 import jakarta.persistence.*;
@@ -33,6 +35,7 @@ public class PortfolioProfile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", unique = true, nullable = false)
     private UserAccount user;

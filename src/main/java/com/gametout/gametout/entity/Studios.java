@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.gametout.gametout.enums.StudiosEnum;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import jakarta.persistence.*;
 
@@ -14,7 +15,8 @@ import jakarta.persistence.*;
     @Index(name = "idx_studio_country", columnList = "country"),
     @Index(name = "idx_studio_city", columnList = "city"),
     @Index(name = "idx_studio_ratings", columnList = "ratings"),
-    @Index(name = "idx_studio_status", columnList = "status")
+    @Index(name = "idx_studio_status", columnList = "status"),
+    @Index(name = "idx_studio_avg_rating", columnList = "average_rating")
 })
 @Data
 @AllArgsConstructor
@@ -60,6 +62,13 @@ public class Studios {
     @Column(name = "longitude", nullable = false)
     private Double longitude;
 
+    // New rating stats fields (computed from studio_ratings table)
+    @Column(name = "rating_count", nullable = false)
+    private Integer ratingCount = 0;
+
+    @Column(name = "average_rating", nullable = false, precision = 3, scale = 2)
+    private BigDecimal averageRating = BigDecimal.ZERO;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -75,6 +84,12 @@ public class Studios {
         this.createdAt = LocalDateTime.now();
         if (this.status == null) {
             this.status = StudiosEnum.PENDING;
+        }
+        if (this.ratingCount == null) {
+            this.ratingCount = 0;
+        }
+        if (this.averageRating == null) {
+            this.averageRating = BigDecimal.ZERO;
         }
     }
 

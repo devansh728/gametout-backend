@@ -30,7 +30,8 @@ public class AuthService {
                 user.getEmail(),
                 user.getRole(),
                 user.isEmailVerified(),
-                user.isActive()
+                user.isActive(),
+                user.getSubscriptionType()
         );
     }
 

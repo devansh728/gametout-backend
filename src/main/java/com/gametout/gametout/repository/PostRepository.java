@@ -17,97 +17,106 @@ import com.gametout.gametout.enums.PostStatus;
 @Repository
 public interface PostRepository extends JpaRepository<BlogPosts, Long> {
 
-  /*
-   * ============================
-   * MAIN PUBLIC FEED (KEYSET)
-   * ============================
-   */
+    /*
+     * ============================
+     * MAIN PUBLIC FEED (KEYSET)
+     * ============================
+     */
 
-  @Query("""
-          SELECT p FROM BlogPosts p
-          WHERE p.postStatus = :status
-            AND p.publishedAt < :cursor
-          ORDER BY p.publishedAt DESC
-      """)
-  List<BlogPosts> findFeed(
-      PostStatus status,
-      LocalDateTime cursor,
-      Pageable pageable);
+    @Query("""
+                SELECT p FROM BlogPosts p
+                WHERE p.postStatus = :status
+                  AND p.publishedAt < :cursor
+                ORDER BY p.publishedAt DESC
+            """)
+    List<BlogPosts> findFeed(
+            PostStatus status,
+            LocalDateTime cursor,
+            Pageable pageable);
 
-  // First page
-  List<BlogPosts> findTop20ByPostStatusOrderByPublishedAtDesc(PostStatus status);
+    // First page
+    List<BlogPosts> findTop20ByPostStatusOrderByPublishedAtDesc(PostStatus status);
 
-  /*
-   * ============================
-   * FILTERS
-   * ============================
-   */
+    /*
+     * ============================
+     * FILTERS
+     * ============================
+     */
 
-  @Query("""
-          SELECT p FROM BlogPosts p
-          WHERE p.postType = :type
-            AND p.postStatus = :status
-          ORDER BY p.publishedAt DESC
-      """)
-  List<BlogPosts> findByType(
-      PostEnum type,
-      PostStatus status,
-      Pageable pageable);
+    @Query("""
+                SELECT p FROM BlogPosts p
+                WHERE p.postType = :type
+                  AND p.postStatus = :status
+                ORDER BY p.publishedAt DESC
+            """)
+    List<BlogPosts> findByType(
+            PostEnum type,
+            PostStatus status,
+            Pageable pageable);
 
-  @Query("""
-          SELECT p FROM BlogPosts p
-          WHERE p.category = :category
-            AND p.postStatus = :status
-          ORDER BY p.publishedAt DESC
-      """)
-  List<BlogPosts> findByCategory(
-      String category,
-      PostStatus status,
-      Pageable pageable);
+    @Query("""
+                SELECT p FROM BlogPosts p
+                WHERE p.category = :category
+                  AND p.postStatus = :status
+                ORDER BY p.publishedAt DESC
+            """)
+    List<BlogPosts> findByCategory(
+            String category,
+            PostStatus status,
+            Pageable pageable);
 
-  /*
-   * ============================
-   * SINGLE POST
-   * ============================
-   */
+    /*
+     * ============================
+     * SINGLE POST
+     * ============================
+     */
 
-  Optional<BlogPosts> findByIdAndPostStatus(Long id, PostStatus status);
+    Optional<BlogPosts> findByIdAndPostStatus(Long id, PostStatus status);
 
-  @Query("""
-          SELECT bp
-          FROM BlogPosts bp
-          LEFT JOIN FETCH bp.contentBlocks
-          WHERE bp.id = :id AND bp.postStatus = :status
-      """)
-  Optional<BlogPosts> findPublishedWithBlocks(
-      @Param("id") Long id,
-      @Param("status") PostStatus status);
+    @Query("""
+                SELECT bp
+                FROM BlogPosts bp
+                LEFT JOIN FETCH bp.contentBlocks
+                WHERE bp.id = :id AND bp.postStatus = :status
+            """)
+    Optional<BlogPosts> findPublishedWithBlocks(
+            @Param("id") Long id,
+            @Param("status") PostStatus status);
 
-  /*
-   * ============================
-   * SEARCH (SIMPLE, FAST)
-   * ============================
-   */
+    /*
+     * ============================
+     * SEARCH (SIMPLE, FAST)
+     * ============================
+     */
 
-  @Query("""
-          SELECT p FROM BlogPosts p
-          WHERE lower(p.title) LIKE lower(concat('%', :keyword, '%'))
-             OR lower(p.description) LIKE lower(concat('%', :keyword, '%'))
-          ORDER BY p.publishedAt DESC
-      """)
-  List<BlogPosts> search(String keyword, Pageable pageable);
+    @Query("""
+                SELECT p FROM BlogPosts p
+                WHERE lower(p.title) LIKE lower(concat('%', :keyword, '%'))
+                   OR lower(p.description) LIKE lower(concat('%', :keyword, '%'))
+                ORDER BY p.publishedAt DESC
+            """)
+    List<BlogPosts> search(String keyword, Pageable pageable);
 
-  /*
-   * ============================
-   * METRICS (SAFE COUNTERS)
-   * ============================
-   */
+    /*
+     * ============================
+     * METRICS (SAFE COUNTERS)
+     * ============================
+     */
 
-  @Modifying(clearAutomatically = true)
-  @Query(value = """
-          UPDATE blog_posts
-          SET likes = likes + 1
-          WHERE id = :postId
-      """, nativeQuery = true)
-  void incrementLikes(Long postId);
+    /*
+     * ============================
+     * COUNTERS
+     * ============================
+     */
+    long countByPostTypeAndPostStatus(PostEnum type, PostStatus status);
+
+    long countByPostStatus(PostStatus status);
+
+    @Modifying(clearAutomatically = true)
+    @Query(value = """
+                UPDATE blog_posts
+                SET likes = likes + 1
+                WHERE id = :postId
+            """, nativeQuery = true)
+    void incrementLikes(Long postId);
 }

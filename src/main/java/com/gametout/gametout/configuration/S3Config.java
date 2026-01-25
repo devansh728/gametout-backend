@@ -18,6 +18,9 @@ public class S3Config {
     @Value("${storage.endpoint}")
     private String endpoint;
 
+    @Value("${storage.public-endpoint}")
+    private String publicEndpoint;
+
     @Value("${storage.access-key}")
     private String accessKey;
 
@@ -30,6 +33,10 @@ public class S3Config {
     @Value("${storage.bucket}")
     private String bucket;
 
+    /**
+     * S3Presigner configured with PUBLIC endpoint for generating URLs
+     * that the browser can access (e.g., http://localhost:9000)
+     */
     @Bean
     public S3Presigner s3Presigner() {
         AwsCredentialsProvider credentials =
@@ -44,11 +51,15 @@ public class S3Config {
         return S3Presigner.builder()
                 .credentialsProvider(credentials)
                 .region(Region.of(region))
-                .endpointOverride(URI.create(endpoint))
+                .endpointOverride(URI.create(publicEndpoint))
                 .serviceConfiguration(serviceConfiguration)
                 .build();
     }
 
+    /**
+     * S3Client configured with INTERNAL endpoint for server-side
+     * operations (e.g., http://minio:9000 in Docker)
+     */
     @Bean
     public S3Client s3Client() {
         return S3Client.builder()

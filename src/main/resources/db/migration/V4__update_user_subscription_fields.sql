@@ -1,0 +1,46 @@
+-- -- V4: Add subscription reference fields to user_accounts for quick access
+-- -- This denormalizes subscription status for faster auth checks
+
+-- -- Add subscription status fields to user_accounts
+-- ALTER TABLE user_accounts
+-- ADD COLUMN subscription_type VARCHAR(20),
+-- ADD COLUMN subscription_expires_at TIMESTAMP;
+
+-- -- Index for subscription expiry checks
+-- CREATE INDEX idx_user_subscription_expires ON user_accounts(subscription_expires_at);
+-- CREATE INDEX idx_user_subscription_type ON user_accounts(subscription_type);
+
+-- -- Function to sync user subscription status from subscriptions table
+-- CREATE OR REPLACE FUNCTION sync_user_subscription_status()
+-- RETURNS TRIGGER AS $$
+-- BEGIN
+--     IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
+--         -- Update user account with subscription info
+--         UPDATE user_accounts
+--         SET subscription_type = NEW.subscription_type::VARCHAR,
+--             subscription_expires_at = NEW.expires_at,
+--             role = CASE 
+--                 WHEN NEW.status = 'ACTIVE' AND NEW.subscription_type = 'CREATOR' THEN 'PREMIUM'
+--                 WHEN NEW.status = 'ACTIVE' AND NEW.subscription_type = 'VIEWER' THEN 'PREMIUM'
+--                 ELSE role
+--             END
+--         WHERE id = NEW.user_id;
+--         RETURN NEW;
+--     ELSIF TG_OP = 'DELETE' THEN
+--         -- Reset user subscription info
+--         UPDATE user_accounts
+--         SET subscription_type = NULL,
+--             subscription_expires_at = NULL,
+--             role = 'USER'
+--         WHERE id = OLD.user_id;
+--         RETURN OLD;
+--     END IF;
+--     RETURN NULL;
+-- END;
+-- $$ LANGUAGE plpgsql;
+
+-- -- Trigger to sync subscription status to user
+-- CREATE TRIGGER trg_sync_user_subscription
+-- AFTER INSERT OR UPDATE OR DELETE ON subscriptions
+-- FOR EACH ROW
+-- EXECUTE FUNCTION sync_user_subscription_status();

@@ -46,7 +46,19 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                                                 .requestMatchers("/api/media/**").hasAnyRole("ADMIN", "USER")
                                                 .requestMatchers("/api/premium/**").hasAnyRole("PREMIUM", "ADMIN")
+                                                // Payment endpoints
+                                                .requestMatchers(HttpMethod.POST, "/api/payment/webhook").permitAll()
+                                                .requestMatchers(HttpMethod.POST, "/api/payment/**").authenticated()
+                                                // Subscription endpoints
+                                                .requestMatchers("/api/user/subscription/**").authenticated()
+                                                // Portfolio endpoints
                                                 .requestMatchers(HttpMethod.POST, "/api/portfolio/**").authenticated()
+                                                .requestMatchers(HttpMethod.GET, "/api/portfolio/my").authenticated()
+                                                .requestMatchers(HttpMethod.GET, "/api/portfolio/can-view-full").authenticated()
+                                                .requestMatchers(HttpMethod.GET, "/api/portfolio/{id}/is-owner").authenticated()
+                                                // Studio rating endpoints
+                                                .requestMatchers(HttpMethod.POST, "/api/user/studio/{id}/rate").authenticated()
+                                                .requestMatchers(HttpMethod.GET, "/api/user/studio/{id}/rating").authenticated()
                                                 .requestMatchers("/api/auth/**").authenticated()
                                                 .requestMatchers(HttpMethod.GET, "/api/posts").permitAll()
                                                 .requestMatchers(HttpMethod.GET, "/api/posts/{id}").permitAll()

@@ -17,6 +17,8 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 @EnableCaching
@@ -40,14 +42,38 @@ public class RedisConfig {
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory factory) {
 
-        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
+        RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
                 .serializeValuesWith(
                         RedisSerializationContext.SerializationPair.fromSerializer(genericSerializer()))
                 .entryTtl(Duration.ofMinutes(10))
                 .disableCachingNullValues();
 
+        // Custom TTLs for specific caches
+        Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
+        
+        // Subscription caches - longer TTL as they don't change often
+        cacheConfigurations.put("subscription", defaultConfig.entryTtl(Duration.ofMinutes(30)));
+        cacheConfigurations.put("elite_access", defaultConfig.entryTtl(Duration.ofMinutes(30)));
+        cacheConfigurations.put("elite_status", defaultConfig.entryTtl(Duration.ofMinutes(30)));
+        
+        // Studio rating caches - shorter TTL to reflect new ratings faster
+        cacheConfigurations.put("studio_rating", defaultConfig.entryTtl(Duration.ofMinutes(5)));
+        
+        // User portfolio cache
+        cacheConfigurations.put("portfolio:user", defaultConfig.entryTtl(Duration.ofMinutes(10)));
+        cacheConfigurations.put("portfolio:list", defaultConfig.entryTtl(Duration.ofMinutes(10)));
+        cacheConfigurations.put("portfolio:detail", defaultConfig.entryTtl(Duration.ofMinutes(10)));
+        
+        // Studios cache
+        cacheConfigurations.put("studios", defaultConfig.entryTtl(Duration.ofMinutes(10)));
+        
+        // User caches
+        cacheConfigurations.put("user_profile", defaultConfig.entryTtl(Duration.ofMinutes(15)));
+        cacheConfigurations.put("user_entity", defaultConfig.entryTtl(Duration.ofMinutes(15)));
+
         return RedisCacheManager.builder(factory)
-                .cacheDefaults(config)
+                .cacheDefaults(defaultConfig)
+                .withInitialCacheConfigurations(cacheConfigurations)
                 .build();
     }
 
@@ -65,20 +91,6 @@ public class RedisConfig {
         return new GenericJackson2JsonRedisSerializer(mapper);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

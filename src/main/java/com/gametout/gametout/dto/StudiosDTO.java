@@ -1,5 +1,6 @@
 package com.gametout.gametout.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -10,11 +11,12 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
 import com.gametout.gametout.enums.StudiosEnum;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class StudiosDTO{
+public class StudiosDTO {
     private Long id;
 
     @NotBlank
@@ -30,6 +32,11 @@ public class StudiosDTO{
     @Min(1)
     @Max(5)
     private Short ratings;
+    
+    // New rating stats from user ratings
+    private BigDecimal averageRating;
+    private Integer ratingCount;
+    
     private String country;
     private String city;
     private String description;
@@ -38,8 +45,5 @@ public class StudiosDTO{
     private Double longitude;
     private StudiosEnum status;
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
-
-    
 }
