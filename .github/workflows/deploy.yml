@@ -44,5 +44,4 @@ jobs:
             cd ~/gametout
             docker-compose pull
             docker-compose down
-            docker-compose rm -f
             docker-compose up -d

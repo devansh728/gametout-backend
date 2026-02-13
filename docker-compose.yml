@@ -77,15 +77,15 @@ networks:
 # version: "3.9"
 
 # services:
-#   tunnel:
-#     image: cloudflare/cloudflared:latest
-#     container_name: gametout-tunnel
-#     restart: always
-#     command: tunnel run
-#     environment:
-#       - TUNNEL_TOKEN=${TUNNEL_TOKEN}
-#     networks:
-#       - app-network
+#   # tunnel:
+#   #   image: cloudflare/cloudflared:latest
+#   #   container_name: gametout-tunnel
+#   #   restart: always
+#   #   command: tunnel run
+#   #   environment:
+#   #     - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+#   #   networks:
+#   #     - app-network
 #   app:
 #     image: devu728/gametout-backend:local
 #     container_name: gametout-app
@@ -109,7 +109,7 @@ networks:
 #         -XX:+ExitOnOutOfMemoryError
 #       REDIS_HOST: redis
 #       STORAGE_ENDPOINT: http://minio:9000
-#       STORAGE_PUBLIC_ENDPOINT: https://files.thegametout.com
+#       STORAGE_PUBLIC_ENDPOINT: http://localhost:9000
 #     depends_on:
 #       redis:
 #         condition: service_healthy

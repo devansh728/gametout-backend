@@ -1,6 +1,7 @@
 package com.gametout.gametout.configuration;
 
 import com.gametout.gametout.filter.FirebaseAuthenticationFilter;
+import com.gametout.gametout.filter.OAuth2AuthenticationFilter;
 
 import java.util.Arrays;
 
@@ -23,9 +24,14 @@ import org.springframework.http.HttpMethod;
 public class SecurityConfig {
 
         private final FirebaseAuthenticationFilter firebaseFilter;
+        private final OAuth2AuthenticationFilter oauth2Filter;
 
-        public SecurityConfig(FirebaseAuthenticationFilter firebaseFilter) {
+        public SecurityConfig(
+                FirebaseAuthenticationFilter firebaseFilter,
+                OAuth2AuthenticationFilter oauth2Filter
+        ) {
                 this.firebaseFilter = firebaseFilter;
+                this.oauth2Filter = oauth2Filter;
         }
 
         @Bean
@@ -44,8 +50,16 @@ public class SecurityConfig {
                                                 .frameOptions(frame -> frame.deny()))
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                                                .requestMatchers("/api/media/**").hasAnyRole("ADMIN", "USER")
+                                                .requestMatchers("/api/media/**").hasAnyRole("ADMIN", "USER","PREMIUM")
                                                 .requestMatchers("/api/premium/**").hasAnyRole("PREMIUM", "ADMIN")
+                                                // OAuth2 endpoints (public)
+                                                .requestMatchers("/api/oauth2/authorize/**").permitAll()
+                                                .requestMatchers("/api/oauth2/login/**").permitAll()
+                                                .requestMatchers("/api/oauth2/callback/**").permitAll()
+                                                // OAuth2 endpoints (authenticated)
+                                                .requestMatchers("/api/oauth2/link/**").authenticated()
+                                                .requestMatchers("/api/oauth2/unlink/**").authenticated()
+                                                .requestMatchers("/api/oauth2/linked-accounts").authenticated()
                                                 // Payment endpoints
                                                 .requestMatchers(HttpMethod.POST, "/api/payment/webhook").permitAll()
                                                 .requestMatchers(HttpMethod.POST, "/api/payment/**").authenticated()
@@ -69,9 +83,14 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.POST,"/api/headlines").authenticated()
                                                 .requestMatchers(HttpMethod.DELETE,"/api/headlines/**").authenticated()
                                                 .anyRequest().permitAll())
+                                // Firebase filter runs before UsernamePasswordAuthenticationFilter
                                 .addFilterBefore(
                                                 firebaseFilter,
-                                                UsernamePasswordAuthenticationFilter.class);
+                                                UsernamePasswordAuthenticationFilter.class)
+                                // OAuth2 JWT filter runs BEFORE Firebase filter (so it processes first)
+                                .addFilterBefore(
+                                                oauth2Filter,
+                                                firebaseFilter.getClass());
 
                 return http.build();
         }

@@ -76,6 +76,17 @@ dependencies {
     // Payment - Razorpay SDK
     implementation 'com.razorpay:razorpay-java:1.4.6'
 
+    // OAuth2 Client
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+    // JWT (for custom OAuth2 tokens)
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
+
+    // HTTP Client for OAuth2 API calls
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
     // Actuator
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 

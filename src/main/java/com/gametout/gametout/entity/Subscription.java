@@ -39,7 +39,7 @@ public class Subscription {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private SubscriptionStatus status = SubscriptionStatus.PENDING;
+    private SubscriptionStatus status = SubscriptionStatus.ACTIVE;
 
     @Column(name = "starts_at", nullable = false)
     private LocalDateTime startsAt;

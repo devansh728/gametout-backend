@@ -11,5 +11,9 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long> 
 
     Optional<UserAccount> findByFirebaseUid(String firebaseUid);
 
+    Optional<UserAccount> findByEmail(String email);
+
     boolean existsByEmail(String email);
+
+    boolean existsByFirebaseUid(String firebaseUid);
 }

@@ -31,7 +31,8 @@ public class AuthService {
                 user.getRole(),
                 user.isEmailVerified(),
                 user.isActive(),
-                user.getSubscriptionType()
+                user.getSubscriptionType(),
+                user.getAuthProvider()
         );
     }
 

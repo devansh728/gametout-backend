@@ -1,5 +1,6 @@
 package com.gametout.gametout.dto;
 
+import com.gametout.gametout.enums.AuthProvider;
 import com.gametout.gametout.enums.SubscriptionType;
 import com.gametout.gametout.enums.UserRole;
 
@@ -9,6 +10,7 @@ public record AuthUserResponse(
         UserRole role,
         boolean emailVerified,
         boolean active,
-        SubscriptionType subscriptionType
+        SubscriptionType subscriptionType,
+        AuthProvider authProvider
 ) {}
 

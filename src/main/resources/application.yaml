@@ -136,3 +136,28 @@ server:
     mime-types: application/json,text/html,text/plain
     min-response-size: 1024
 
+# Application Configuration
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:5000}
+
+# OAuth2 Configuration for Discord, LinkedIn, Steam
+oauth2:
+  discord:
+    client-id: ${DISCORD_CLIENT_ID:1467051119732719718}
+    client-secret: ${DISCORD_CLIENT_SECRET:VKjAD4S9_AOAer3dkIVFxaZsJeo7-p8v}
+    redirect-uri: ${API_BASE_URL:http://localhost:8080}/api/oauth2/callback/discord
+    scope: identify email
+  linkedin:
+    client-id: ${LINKEDIN_CLIENT_ID:}
+    client-secret: ${LINKEDIN_CLIENT_SECRET:}
+    redirect-uri: ${API_BASE_URL:http://localhost:8080}/api/oauth2/callback/linkedin
+    scope: openid profile email
+  steam:
+    api-key: ${STEAM_API_KEY:}
+    redirect-uri: ${API_BASE_URL:http://localhost:8080}/api/oauth2/callback/steam
+    realm: ${API_BASE_URL:http://localhost:8080}
+  jwt:
+    secret: ${JWT_SECRET:gametout-oauth2-jwt-secret-key-must-be-at-least-256-bits-long-for-security}
+    expiration: 86400000  # 24 hours in milliseconds
+    issuer: gametout
+
