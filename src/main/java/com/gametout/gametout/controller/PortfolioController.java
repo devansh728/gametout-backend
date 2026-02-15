@@ -1,6 +1,5 @@
 package com.gametout.gametout.controller;
 
-import com.gametout.gametout.verification.EmailVerifiedRequired;
 import com.gametout.gametout.dto.PortfolioRequest;
 import com.gametout.gametout.dto.PortfolioResponseDTO;
 import com.gametout.gametout.entity.PortfolioProfile;
@@ -11,7 +10,6 @@ import com.gametout.gametout.dto.PortfolioPageResponse;
 import com.gametout.gametout.service.PortfolioService;
 import com.gametout.gametout.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -38,7 +36,6 @@ public class PortfolioController {
     }
 
     @PostMapping
-    @EmailVerifiedRequired
     public PortfolioProfile createOrUpdate(
             Authentication auth,
             @RequestBody PortfolioRequest req) {
@@ -82,7 +79,6 @@ public class PortfolioController {
     }
 
     @GetMapping("/list")
-    @Cacheable(value = "portfolio:list", key = "#category + ':' + #pageable.pageNumber")
     public PortfolioPageResponse list(
             @RequestParam JobCategory category,
             Pageable pageable) {

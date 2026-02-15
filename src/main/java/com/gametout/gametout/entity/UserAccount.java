@@ -1,6 +1,7 @@
 package com.gametout.gametout.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.gametout.gametout.enums.AuthProvider;
 import com.gametout.gametout.enums.SubscriptionType;
 import com.gametout.gametout.enums.UserRole;
@@ -27,6 +28,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserAccount {
 
     @Id
@@ -60,7 +62,7 @@ public class UserAccount {
     // Subscription fields (denormalized for fast access)
     @Enumerated(EnumType.STRING)
     @Column(name = "subscription_type")
-    private SubscriptionType subscriptionType = SubscriptionType.CREATOR;  // VIEWER, CREATOR
+    private SubscriptionType subscriptionType = SubscriptionType.VIEWER;  // VIEWER, CREATOR
 
     @Column(name = "subscription_expires_at")
     private LocalDateTime subscriptionExpiresAt = LocalDateTime.of(2026, 4, 30, 23, 59);

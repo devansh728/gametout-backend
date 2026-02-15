@@ -16,6 +16,8 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.PutBucketPolicyRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.DeleteObjectPresignRequest;
 
 
 @Service
@@ -130,6 +132,38 @@ public class MediaPresignService {
         String cleanEndpoint = publicEndpoint.endsWith("/") ? publicEndpoint.substring(0, publicEndpoint.length() - 1) : publicEndpoint;
         return String.format("%s/%s/%s", cleanEndpoint, bucket, objectKey);
     }
+
+    public Map<String, String> presignDelete(String objectKey) {
+        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                .bucket(bucket)
+                .key(objectKey)
+                .build();
+
+        DeleteObjectPresignRequest presignRequest = DeleteObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(5)) 
+                .deleteObjectRequest(deleteObjectRequest)
+                .build();
+
+        String deleteUrl = presigner.presignDeleteObject(presignRequest)
+                .url()
+                .toString();
+
+        return Map.of(
+            "deleteUrl", deleteUrl,
+            "objectKey", objectKey
+        );
+    }
+
+    public void directDelete(String objectKey) {
+        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                .bucket(bucket)
+                .key(objectKey)
+                .build();
+                
+        s3Client.deleteObject(deleteObjectRequest);
+        log.info("Deleted object: {}", objectKey);
+    }
+
 }
 
 

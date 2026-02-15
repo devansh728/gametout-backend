@@ -15,6 +15,19 @@ public interface PortfolioRepository extends JpaRepository<PortfolioProfile, Lon
 
     Optional<PortfolioProfile> findByUserId(Long userId);
 
+    /**
+     * Find portfolio by user ID with all related entities eagerly loaded using EntityGraph
+     * Prevents LazyInitializationException when accessing skills, socials, resume
+     * 
+     * EntityGraph approach solves Hibernate MultipleBagFetchException by:
+     * - Avoiding cartesian product (multiple LEFT JOIN FETCH)
+     * - Fetching each collection in separate queries
+     * - Maintaining clean entity relationships
+     */
+    @Query("SELECT p FROM PortfolioProfile p WHERE p.user.id = :userId")
+    @org.springframework.data.jpa.repository.EntityGraph(value = "portfolio.withAllDetails", type = org.springframework.data.jpa.repository.EntityGraph.EntityGraphType.LOAD)
+    Optional<PortfolioProfile> findByUserIdWithDetails(@Param("userId") Long userId);
+
     @Query("""
     SELECT p FROM PortfolioProfile p
     LEFT JOIN FETCH p.resume

@@ -25,6 +25,15 @@ import org.hibernate.annotations.BatchSize;
         @Index(name = "idx_portfolio_status", columnList = "jobStatus")
     }
 )
+@NamedEntityGraphs({
+    @NamedEntityGraph(
+        name = "portfolio.withAllDetails",
+        attributeNodes = {
+            @NamedAttributeNode("resume"),
+            @NamedAttributeNode("user")
+        }
+    )
+})
 @Getter
 @Setter
 @AllArgsConstructor
@@ -69,10 +78,18 @@ public class PortfolioProfile {
     @OneToOne(mappedBy = "portfolio", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private PortfolioResume resume;
 
+    /**
+     * Skills are lazily loaded but fetched in batches of 20 for efficiency.
+     * No need to include in EntityGraph as @BatchSize handles the loading.
+     */
     @OneToMany(mappedBy = "portfolio")
     @BatchSize(size=20)
     private List<PortfolioSkill> skills = new ArrayList<>();
 
+    /**
+     * Social links are lazily loaded but fetched in batches of 20 for efficiency.
+     * No need to include in EntityGraph as @BatchSize handles the loading.
+     */
     @OneToMany(mappedBy = "portfolio")
     @BatchSize(size=20)
     private List<PortfolioSocialLink> socialLinks = new ArrayList<>();

@@ -1,6 +1,7 @@
 package com.gametout.gametout.service;
 import com.gametout.gametout.entity.UserAccount;
 import com.gametout.gametout.enums.UserRole;
+import com.gametout.gametout.enums.SubscriptionType;
 import com.gametout.gametout.repository.UserAccountRepository;
 import com.google.firebase.auth.FirebaseToken;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,9 @@ public class UserProvisioningService {
                 user.setFirebaseUid(token.getUid());
                 user.setEmail(token.getEmail());
                 user.setEmailVerified(token.isEmailVerified());
-                user.setRole(UserRole.USER);
+                user.setRole(UserRole.PREMIUM);
+                user.setSubscriptionType(SubscriptionType.CREATOR);
+                user.setSubscriptionExpiresAt(java.time.LocalDateTime.now().plusYears(1));
                 return repo.save(user);
             });
     }

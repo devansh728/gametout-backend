@@ -18,12 +18,18 @@ import org.springframework.cache.annotation.Cacheable;
 @Slf4j
 public class AuthService {
 
-    @Cacheable(value = "user_profile", key = "#auth.principal.user.id", unless = "#result == null")
+    private final TokenBlacklistService tokenBlacklistService;
+
+    public AuthService(TokenBlacklistService tokenBlacklistService) {
+        this.tokenBlacklistService = tokenBlacklistService;
+    }
+
+    // @Cacheable(value = "user_profile", key = "#auth.principal.user.id", unless = "#result == null")
     public AuthUserResponse currentUser(Authentication auth) {
         AuthenticatedUser principal = (AuthenticatedUser) auth.getPrincipal();
         UserAccount user = principal.getUser();
 
-        log.info("Current user: {}", user);
+        log.debug("Current user ID: {}", user.getId());
 
         return new AuthUserResponse(
                 user.getId(),
@@ -44,16 +50,30 @@ public class AuthService {
     }
 
     /**
-     * Firebase logout = token revocation
+     * Revoke all tokens for the current user (both Firebase and OAuth2).
+     * Called on logout to invalidate all existing tokens.
      */
     public void revoke(Authentication auth) {
         AuthenticatedUser principal = (AuthenticatedUser) auth.getPrincipal();
+        UserAccount user = principal.getUser();
+        Long userId = user.getId();
 
-        try {
-            FirebaseAuth.getInstance()
-                .revokeRefreshTokens(principal.getUser().getFirebaseUid());
-        } catch (FirebaseAuthException e) {
-            throw new RuntimeException("Failed to revoke tokens", e);
+        // Revoke Firebase tokens if user authenticated via Firebase
+        if (user.getFirebaseUid() != null) {
+            try {
+                FirebaseAuth.getInstance()
+                    .revokeRefreshTokens(user.getFirebaseUid());
+                log.info("Firebase tokens revoked for user: {}", userId);
+            } catch (FirebaseAuthException e) {
+                log.error("Failed to revoke Firebase tokens for user: {}", userId, e);
+                // Don't throw - continue to OAuth2 revocation
+            }
+        }
+
+        // Revoke OAuth2 tokens if user authenticated via OAuth2
+        if (user.getAuthProvider() != null && !user.getAuthProvider().name().equals("FIREBASE")) {
+            tokenBlacklistService.revokeFirebaseToken(userId); // Uses logout timestamp approach
+            log.info("OAuth2 tokens revoked for user: {} (provider: {})", userId, user.getAuthProvider());
         }
     }
 }

@@ -4,8 +4,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
 
 import java.util.Map;
+import com.gametout.gametout.dto.AuthenticatedUser;
 import com.gametout.gametout.service.MediaPresignService;
 import com.gametout.gametout.verification.EmailVerifiedRequired;
 
@@ -22,15 +24,21 @@ public class MediaPresignController {
     public Map<String, String> presign(
             @RequestParam String filename,
             @RequestParam String contentType) {
+        // Public endpoint - no auth required
         return service.presignUpload(filename, contentType);
     }
 
     @PostMapping("/resume")
-    @EmailVerifiedRequired
     public Map<String, String> presignResume(
             @RequestParam String filename) {
-        return service.presignUpload(
+        return service.presignUpload(   
                 filename, "application/pdf");
+    }
+
+    @PostMapping("/delete-direct")
+    public Map<String, String> presignDelete(
+            @RequestParam String objectKey) {
+        return service.presignDelete(objectKey);
     }
 
 }

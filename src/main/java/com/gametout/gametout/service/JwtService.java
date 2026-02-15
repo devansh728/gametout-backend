@@ -44,6 +44,7 @@ public class JwtService {
         claims.put("email", user.getEmail());
         claims.put("role", user.getRole().name());
         claims.put("provider", user.getAuthProvider().name());
+        claims.put("jti", java.util.UUID.randomUUID().toString()); // JWT ID for revocation
 
         Date now = new Date();
         Date expiry = new Date(now.getTime() + oauth2Config.getJwt().getExpiration());
@@ -104,5 +105,17 @@ public class JwtService {
      */
     public Long getExpirationInSeconds() {
         return oauth2Config.getJwt().getExpiration() / 1000;
+    }
+
+    /**
+     * Extract token ID (jti claim) from token for revocation tracking.
+     */
+    public String getTokenId(String token) {
+        try {
+            Claims claims = validateToken(token);
+            return claims.get("jti", String.class);
+        } catch (JwtException e) {
+            return null;
+        }
     }
 }

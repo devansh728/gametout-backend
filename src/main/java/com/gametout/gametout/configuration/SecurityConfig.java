@@ -50,6 +50,8 @@ public class SecurityConfig {
                                                 .frameOptions(frame -> frame.deny()))
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                                                // Media presign endpoints are public - anyone can get presigned URLs
+                                                .requestMatchers("/api/media/presign/**").permitAll()
                                                 .requestMatchers("/api/media/**").hasAnyRole("ADMIN", "USER","PREMIUM")
                                                 .requestMatchers("/api/premium/**").hasAnyRole("PREMIUM", "ADMIN")
                                                 // OAuth2 endpoints (public)

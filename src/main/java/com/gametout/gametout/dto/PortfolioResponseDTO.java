@@ -1,11 +1,11 @@
 package com.gametout.gametout.dto;
 
-import com.gametout.gametout.entity.UserAccount;
 import com.gametout.gametout.enums.JobCategory;
 import com.gametout.gametout.enums.JobProfileStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.io.Serializable;
 import java.util.List;
 import lombok.Builder;
 
@@ -15,10 +15,12 @@ import lombok.Builder;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PortfolioResponseDTO {
+public class PortfolioResponseDTO implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private Long id;
 
-    private UserAccount user;
+    private UserSummaryDTO user;
 
     private String name;
 

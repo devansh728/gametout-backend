@@ -4,6 +4,7 @@ import com.gametout.gametout.dto.AuthenticatedUser;
 import com.gametout.gametout.entity.UserAccount;
 import com.gametout.gametout.service.JwtService;
 import com.gametout.gametout.service.OAuth2Service;
+import com.gametout.gametout.service.TokenBlacklistService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -30,10 +31,16 @@ public class OAuth2AuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final OAuth2Service oauth2Service;
+    private final TokenBlacklistService tokenBlacklistService;
 
-    public OAuth2AuthenticationFilter(JwtService jwtService, OAuth2Service oauth2Service) {
+    public OAuth2AuthenticationFilter(
+            JwtService jwtService,
+            OAuth2Service oauth2Service,
+            TokenBlacklistService tokenBlacklistService
+    ) {
         this.jwtService = jwtService;
         this.oauth2Service = oauth2Service;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     @Override
@@ -58,6 +65,13 @@ public class OAuth2AuthenticationFilter extends OncePerRequestFilter {
             // Firebase tokens are much longer and have a different structure
             if (isCustomJwt(token)) {
                 try {
+                    // First check if token is revoked
+                    if (tokenBlacklistService.isOAuth2TokenRevoked(token)) {
+                        log.warn("OAuth2 JWT token has been revoked");
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        return;
+                    }
+
                     Claims claims = jwtService.validateToken(token);
                     Long userId = claims.get("userId", Long.class);
 

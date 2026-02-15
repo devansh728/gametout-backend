@@ -267,7 +267,9 @@ public class OAuth2Service {
         UserAccount user = new UserAccount();
         user.setEmail(userInfo.getEmail());
         user.setEmailVerified(userInfo.getEmail() != null && !userInfo.getEmail().contains("@gametout.local"));
-        user.setRole(UserRole.USER);
+        user.setRole(UserRole.PREMIUM);
+        user.setSubscriptionType(com.gametout.gametout.enums.SubscriptionType.VIEWER);
+        user.setSubscriptionExpiresAt(java.time.LocalDateTime.now().plusYears(1));
         user.setAuthProvider(provider);
         user.setActive(true);
 
