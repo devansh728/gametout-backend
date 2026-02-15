@@ -23,3 +23,5 @@ public interface StudiosRepository extends JpaRepository<Studios, Long>, JpaSpec
 
         long countByStatus(StudiosEnum status);
 }
+//added hi
+//gii

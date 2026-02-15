@@ -137,6 +137,7 @@ server:
     mime-types: application/json,text/html,text/plain
     min-response-size: 1024
 
+#Added for CORS configuration
 # Application Configuration
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:5000}
