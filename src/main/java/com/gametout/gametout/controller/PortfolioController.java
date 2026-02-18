@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.util.Map;
 
@@ -33,6 +34,12 @@ public class PortfolioController {
     public ResponseEntity<Map<String, Long>> getCount() {
         long count = service.getTotalCount();
         return ResponseEntity.ok(Map.of("count", count));
+    }
+
+    @GetMapping("/list/all")
+    @Cacheable(value = "portfolio:list:all", key = "#pageable.pageNumber")
+    public PortfolioPageResponse listAll(Pageable pageable) {
+        return service.listAll(pageable);
     }
 
     @PostMapping

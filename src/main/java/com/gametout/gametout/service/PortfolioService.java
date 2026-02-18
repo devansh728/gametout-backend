@@ -115,6 +115,14 @@ public class PortfolioService {
         return saved;
     }
 
+    @Transactional(readOnly = true)
+    @Cacheable(value = "portfolio:list:all", key = "#pageable.pageNumber")
+    public PortfolioPageResponse listAll(Pageable pageable) {
+        Page<PortfolioProfile> page = portfolioRepo.findAll(pageable);
+        Page<PortfolioResponseDTO> result = page.map(this::convertToDTO);
+        return new PortfolioPageResponse(result);
+    }
+
     @Cacheable(value = "portfolio:list", key = "#category + ':' + #pageable.pageNumber")
     @Transactional(readOnly = true)
     public PortfolioPageResponse list(
@@ -175,7 +183,8 @@ public class PortfolioService {
 
     /**
      * Get current user's own portfolio for editing
-     * Uses findByUserIdWithDetails to eagerly load all related entities (skills, socials, resume)
+     * Uses findByUserIdWithDetails to eagerly load all related entities (skills,
+     * socials, resume)
      * to prevent LazyInitializationException during DTO conversion
      */
     @Transactional(readOnly = true)
