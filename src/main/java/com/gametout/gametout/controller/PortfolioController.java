@@ -9,6 +9,7 @@ import com.gametout.gametout.dto.AuthenticatedUser;
 import com.gametout.gametout.dto.PortfolioPageResponse;
 import com.gametout.gametout.service.PortfolioService;
 import com.gametout.gametout.service.SubscriptionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +46,7 @@ public class PortfolioController {
     @PostMapping
     public PortfolioProfile createOrUpdate(
             Authentication auth,
-            @RequestBody PortfolioRequest req) {
+            @Valid @RequestBody PortfolioRequest req) {
         UserAccount user = ((AuthenticatedUser) auth.getPrincipal()).getUser();
         return service.createOrUpdate(user, req);
     }
