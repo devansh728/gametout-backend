@@ -43,12 +43,20 @@ public class PortfolioController {
         return service.listAll(pageable);
     }
 
+    // @PostMapping
+    // public PortfolioProfile createOrUpdate(
+    //         Authentication auth,
+    //         @Valid @RequestBody PortfolioRequest req) {
+    //     UserAccount user = ((AuthenticatedUser) auth.getPrincipal()).getUser();
+    //     return service.createOrUpdate(user, req);
+    // }
+
     @PostMapping
-    public PortfolioProfile createOrUpdate(
+    public PortfolioResponseDTO createOrUpdate(
             Authentication auth,
             @Valid @RequestBody PortfolioRequest req) {
         UserAccount user = ((AuthenticatedUser) auth.getPrincipal()).getUser();
-        return service.createOrUpdate(user, req);
+        return service.createOrUpdateAndReturnDTO(user, req);
     }
 
     /**

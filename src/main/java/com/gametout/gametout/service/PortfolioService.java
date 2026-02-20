@@ -123,6 +123,12 @@ public class PortfolioService {
         return new PortfolioPageResponse(result);
     }
 
+    @Transactional
+    public PortfolioResponseDTO createOrUpdateAndReturnDTO(UserAccount user, PortfolioRequest req) {
+        PortfolioProfile saved = createOrUpdate(user, req);
+        return convertToDTO(saved);
+    }
+
     @Cacheable(value = "portfolio:list", key = "#category + ':' + #pageable.pageNumber")
     @Transactional(readOnly = true)
     public PortfolioPageResponse list(
