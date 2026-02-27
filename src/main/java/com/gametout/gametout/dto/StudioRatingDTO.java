@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 public class StudioRatingDTO {
     
     private Long studioId;
-    private BigDecimal averageRating;
+    private Double averageRating;
     private Integer ratingCount;
     private Short userRating; // Current user's rating (null if not rated)
     
@@ -27,7 +27,7 @@ public class StudioRatingDTO {
     public static StudioRatingDTO fromStats(Long studioId, BigDecimal avgRating, Integer count) {
         return StudioRatingDTO.builder()
             .studioId(studioId)
-            .averageRating(avgRating != null ? avgRating : BigDecimal.ZERO)
+            .averageRating(avgRating != null ? avgRating.doubleValue() : 0.0)
             .ratingCount(count != null ? count : 0)
             .userRating(null)
             .build();
@@ -43,7 +43,7 @@ public class StudioRatingDTO {
             Short userRating) {
         return StudioRatingDTO.builder()
             .studioId(studioId)
-            .averageRating(avgRating != null ? avgRating : BigDecimal.ZERO)
+            .averageRating(avgRating != null ? avgRating.doubleValue() : 0.0)
             .ratingCount(count != null ? count : 0)
             .userRating(userRating)
             .build();
