@@ -11,6 +11,7 @@ import com.gametout.gametout.entity.PortfolioSkill;
 import com.gametout.gametout.entity.PortfolioSocialLink;
 import com.gametout.gametout.entity.UserAccount;
 import com.gametout.gametout.enums.JobCategory;
+import com.gametout.gametout.enums.JobProfileStatus;
 import com.gametout.gametout.enums.UserRole;
 import com.gametout.gametout.repository.PortfolioRepository;
 import com.gametout.gametout.repository.PortfolioSkillRepository;
@@ -30,6 +31,7 @@ import org.springframework.security.core.Authentication;
 import com.gametout.gametout.dto.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -135,6 +137,29 @@ public class PortfolioService {
             JobCategory category,
             Pageable pageable) {
         Page<PortfolioProfile> page = portfolioRepo.listByCategory(category, pageable);
+        Page<PortfolioResponseDTO> result = page.map(this::convertToDTO);
+        return new PortfolioPageResponse(result);
+    }
+
+    /**
+     * List portfolios with multiple category and status filters.
+     * Empty/null lists = no filter on that field (fetch all).
+     * 
+     * @param categories List of job categories to filter by (OR logic)
+     * @param statuses   List of job statuses to filter by (OR logic)
+     * @param pageable   Pagination info
+     */
+    @Cacheable(value = "portfolio:filter", key = "T(String).valueOf(#categories) + ':' + T(String).valueOf(#statuses) + ':' + #pageable.pageNumber")
+    @Transactional(readOnly = true)
+    public PortfolioPageResponse listByFilters(
+            List<JobCategory> categories,
+            List<JobProfileStatus> statuses,
+            Pageable pageable) {
+        // Convert empty lists to null for the query
+        List<JobCategory> cats = (categories == null || categories.isEmpty()) ? null : categories;
+        List<JobProfileStatus> stats = (statuses == null || statuses.isEmpty()) ? null : statuses;
+        
+        Page<PortfolioProfile> page = portfolioRepo.findByFilters(cats, stats, pageable);
         Page<PortfolioResponseDTO> result = page.map(this::convertToDTO);
         return new PortfolioPageResponse(result);
     }

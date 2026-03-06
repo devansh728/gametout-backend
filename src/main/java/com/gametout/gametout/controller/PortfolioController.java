@@ -5,6 +5,7 @@ import com.gametout.gametout.dto.PortfolioResponseDTO;
 import com.gametout.gametout.entity.PortfolioProfile;
 import com.gametout.gametout.entity.UserAccount;
 import com.gametout.gametout.enums.JobCategory;
+import com.gametout.gametout.enums.JobProfileStatus;
 import com.gametout.gametout.dto.AuthenticatedUser;
 import com.gametout.gametout.dto.PortfolioPageResponse;
 import com.gametout.gametout.service.PortfolioService;
@@ -17,6 +18,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.cache.annotation.Cacheable;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -43,12 +45,28 @@ public class PortfolioController {
         return service.listAll(pageable);
     }
 
+    /**
+     * Filter portfolios by multiple categories and/or statuses
+     * GET /api/portfolio/list/filter?categories=PROGRAMMER,ARTIST&statuses=OPEN,FREELANCE
+     * 
+     * @param categories List of job categories (OR logic) - optional
+     * @param statuses   List of job statuses (OR logic) - optional
+     * @param pageable   Pagination (page, size, sort)
+     */
+    @GetMapping("/list/filter")
+    public PortfolioPageResponse listByFilters(
+            @RequestParam(required = false) List<JobCategory> categories,
+            @RequestParam(required = false) List<JobProfileStatus> statuses,
+            Pageable pageable) {
+        return service.listByFilters(categories, statuses, pageable);
+    }
+
     // @PostMapping
     // public PortfolioProfile createOrUpdate(
-    //         Authentication auth,
-    //         @Valid @RequestBody PortfolioRequest req) {
-    //     UserAccount user = ((AuthenticatedUser) auth.getPrincipal()).getUser();
-    //     return service.createOrUpdate(user, req);
+    // Authentication auth,
+    // @Valid @RequestBody PortfolioRequest req) {
+    // UserAccount user = ((AuthenticatedUser) auth.getPrincipal()).getUser();
+    // return service.createOrUpdate(user, req);
     // }
 
     @PostMapping
