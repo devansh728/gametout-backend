@@ -18,6 +18,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.access.prepost.PreAuthorize;
 import com.gametout.gametout.enums.StudiosEnum;
+import com.gametout.gametout.enums.StudioCategory;
+import com.gametout.gametout.enums.HiringStatus;
+import com.gametout.gametout.repository.StudioSpecification;
 import java.util.List;
 import java.util.Optional;
 
@@ -79,23 +82,17 @@ public class StudiosService {
                         .map(this::convertToDTO));
     }
 
-    @Cacheable(value = "studios", key = "'filter-' + #country + '-' + #city + '-' + #ratings + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
-    public StudioPageResponse getStudiosByFilters(String country, String city, Short ratings, Pageable pageable) {
-        if (country != null && city != null && ratings != null) {
-            return new StudioPageResponse(
-                    studiosRepository.findByStatusAndCountryContainingIgnoreCaseAndCityContainingIgnoreCaseAndRatings(
-                            StudiosEnum.PUBLISHED, country, city, ratings, pageable).map(this::convertToDTO));
-        } else if (country != null && city != null) {
-            return new StudioPageResponse(
-                    studiosRepository.findByStatusAndCountryContainingIgnoreCaseAndCityContainingIgnoreCase(
-                            StudiosEnum.PUBLISHED, country, city, pageable).map(this::convertToDTO));
-        } else if (ratings != null) {
-            return new StudioPageResponse(studiosRepository
-                    .findByStatusAndRatings(StudiosEnum.PUBLISHED, ratings, pageable).map(this::convertToDTO));
-        } else {
-            return new StudioPageResponse(
-                    studiosRepository.findByStatus(StudiosEnum.PUBLISHED, pageable).map(this::convertToDTO));
-        }
+    @Cacheable(value = "studios", key = "'filter-' + #country + '-' + #city + '-' + #ratings + '-' + #category + '-' + #hiringStatus + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
+    public StudioPageResponse getStudiosByFilters(String country, String city, Short ratings, 
+            StudioCategory category, HiringStatus hiringStatus, Pageable pageable) {
+        return new StudioPageResponse(
+                studiosRepository.findAll(
+                    StudioSpecification.withFilters(
+                        StudiosEnum.PUBLISHED, country, city, ratings, category, hiringStatus
+                    ),
+                    pageable
+                ).map(this::convertToDTO)
+        );
     }
 
     @CachePut(value = "studios", key = "#studio.id")
@@ -218,6 +215,14 @@ public class StudiosService {
                 .createdAt(studio.getCreatedAt())
                 .updatedAt(studio.getUpdatedAt())
                 .status(studio.getStatus())
+                .category(studio.getCategory())
+                .hiringStatus(studio.getHiringStatus())
+                .studioEmail(studio.getStudioEmail())
+                .studioMobile(studio.getStudioMobile())
+                .youtubeUrl(studio.getYoutubeUrl())
+                .linkedinUrl(studio.getLinkedinUrl())
+                .twitterUrl(studio.getTwitterUrl())
+                .discordUrl(studio.getDiscordUrl())
                 .build();
     }
 

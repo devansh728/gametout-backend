@@ -20,6 +20,8 @@ import com.gametout.gametout.dto.StudioPageResponse;
 import com.gametout.gametout.service.StudiosService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import com.gametout.gametout.enums.StudioCategory;
+import com.gametout.gametout.enums.HiringStatus;
 import java.util.Map;
 
 @RestController
@@ -59,8 +61,10 @@ public class UserStudioController {
             @RequestParam(required = false) String country,
             @RequestParam(required = false) String city,
             @RequestParam(required = false) Short ratings,
+            @RequestParam(required = false) StudioCategory category,
+            @RequestParam(required = false) HiringStatus hiringStatus,
             Pageable pageable) {
-        return ResponseEntity.ok(studiosService.getStudiosByFilters(country, city, ratings, pageable));
+        return ResponseEntity.ok(studiosService.getStudiosByFilters(country, city, ratings, category, hiringStatus, pageable));
     }
 
     /**

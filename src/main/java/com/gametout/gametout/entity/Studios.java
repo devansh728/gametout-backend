@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.gametout.gametout.enums.StudiosEnum;
+import com.gametout.gametout.enums.StudioCategory;
+import com.gametout.gametout.enums.HiringStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import jakarta.persistence.*;
@@ -79,11 +81,40 @@ public class Studios {
     @Column(name = "status", nullable = false)  // New status field
     private StudiosEnum status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category")
+    private StudioCategory category;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "hiring_status")
+    private HiringStatus hiringStatus = HiringStatus.NOT_HIRING;
+
+    @Column(name = "studio_email", length = 100)
+    private String studioEmail;
+
+    @Column(name = "studio_mobile", length = 20)
+    private String studioMobile;
+
+    @Column(name = "youtube_url", columnDefinition = "text")
+    private String youtubeUrl;
+
+    @Column(name = "linkedin_url", columnDefinition = "text")
+    private String linkedinUrl;
+
+    @Column(name = "twitter_url", columnDefinition = "text")
+    private String twitterUrl;
+
+    @Column(name = "discord_url", columnDefinition = "text")
+    private String discordUrl;
+
     @PrePersist
     public void onCreate() {
         this.createdAt = LocalDateTime.now();
         if (this.status == null) {
             this.status = StudiosEnum.PENDING;
+        }
+        if (this.hiringStatus == null) {
+            this.hiringStatus = HiringStatus.NOT_HIRING;
         }
         if (this.ratingCount == null) {
             this.ratingCount = 0;

@@ -11,6 +11,8 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
 import com.gametout.gametout.enums.StudiosEnum;
+import com.gametout.gametout.enums.StudioCategory;
+import com.gametout.gametout.enums.HiringStatus;
 
 @Data
 @AllArgsConstructor
@@ -44,6 +46,14 @@ public class StudiosDTO {
     private Double latitude;
     private Double longitude;
     private StudiosEnum status;
+    private StudioCategory category;
+    private HiringStatus hiringStatus;
+    private String studioEmail;
+    private String studioMobile;
+    private String youtubeUrl;
+    private String linkedinUrl;
+    private String twitterUrl;
+    private String discordUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
