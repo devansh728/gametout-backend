@@ -74,6 +74,7 @@ public class PortfolioProfile {
     private String coverPhotoUrl;
     private String profilePhotoUrl;
     private String contactEmail;
+    private String mobile;
 
     @OneToOne(mappedBy = "portfolio", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private PortfolioResume resume;

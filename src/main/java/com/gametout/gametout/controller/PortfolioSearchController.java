@@ -27,7 +27,7 @@ public class PortfolioSearchController {
     }
 
     @GetMapping
-    @RateLimiter(name = "searchLimiter")
+    // @RateLimiter(name = "searchLimiter")
     public PortfolioCardPage search(
             @RequestParam String q,
             Pageable pageable) {

@@ -31,6 +31,8 @@ public record PortfolioRequest(
     
     @NotBlank(message = "Contact email is required")
     String contactEmail,
+
+    String mobile,
     
     List<SkillDTO> skills,
     List<SocialLinkDTO> socials,

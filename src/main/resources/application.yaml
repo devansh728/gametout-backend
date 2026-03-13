@@ -85,7 +85,7 @@ resilience4j:
         limitRefreshPeriod: 1s
         timeoutDuration: 0
       searchLimiter:
-        limitForPeriod: 20
+        limitForPeriod: 100
         limitRefreshPeriod: 1s
         timeoutDuration: 0
 

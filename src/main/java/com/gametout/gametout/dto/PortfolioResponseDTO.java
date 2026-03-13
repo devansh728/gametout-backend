@@ -46,6 +46,8 @@ public class PortfolioResponseDTO implements Serializable {
 
     private String contactEmail;
 
+    private String mobile;
+
     private String resumeUrl;
 
     private List<SkillDTO> skills;

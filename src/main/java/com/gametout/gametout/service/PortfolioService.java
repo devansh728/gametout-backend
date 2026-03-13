@@ -71,6 +71,7 @@ public class PortfolioService {
         portfolio.setCoverPhotoUrl(req.coverPhotoUrl());
         portfolio.setProfilePhotoUrl(req.profilePhotoUrl());
         portfolio.setContactEmail(req.contactEmail());
+        portfolio.setMobile(req.mobile());
 
         PortfolioProfile saved = portfolioRepo.save(portfolio);
 
@@ -291,6 +292,7 @@ public class PortfolioService {
         dto.setCoverPhotoUrl(p.getCoverPhotoUrl());
         dto.setProfilePhotoUrl(p.getProfilePhotoUrl());
         dto.setContactEmail(p.getContactEmail());
+        dto.setMobile(p.getMobile());
         dto.setResumeUrl(
                 p.getResume() != null ? p.getResume().getResumeUrl() : null);
         dto.setSkills(p.getSkills().stream()
