@@ -91,5 +91,27 @@ public interface PortfolioRepository extends JpaRepository<PortfolioProfile, Lon
         @Param("statuses") List<JobProfileStatus> statuses,
         Pageable pageable
     );
+
+    /**
+     * Admin listing query with optional name search and category/status filters.
+     */
+    @Query("""
+        SELECT p FROM PortfolioProfile p
+        LEFT JOIN FETCH p.resume
+        LEFT JOIN FETCH p.user
+        WHERE (:query IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%')))
+          AND (:categories IS NULL OR p.jobCategory IN :categories)
+          AND (:statuses IS NULL OR p.jobStatus IN :statuses)
+        ORDER BY
+            CASE WHEN p.isPremium = true THEN 0 ELSE 1 END,
+            p.likesCount DESC,
+            p.createdAt DESC
+    """)
+    Page<PortfolioProfile> findForAdmin(
+        @Param("query") String query,
+        @Param("categories") List<JobCategory> categories,
+        @Param("statuses") List<JobProfileStatus> statuses,
+        Pageable pageable
+    );
 }
 

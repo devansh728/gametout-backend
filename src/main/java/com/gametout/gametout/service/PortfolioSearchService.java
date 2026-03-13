@@ -24,18 +24,20 @@ public class PortfolioSearchService {
      */
     @Cacheable(
         value = "portfolio:search",
-        key = "#query.toLowerCase() + ':' + #pageable.pageNumber"
+        key = "'v2:' + (#query == null ? '' : #query.trim().toLowerCase()) + ':' + #pageable.pageNumber + ':' + #pageable.pageSize"
     )
     @Transactional(readOnly = true)
     public PortfolioCardPage search(
             String query,
             Pageable pageable
     ) {
-        if (query == null || query.length() < 2) {
+        String normalizedQuery = query == null ? "" : query.trim();
+
+        if (normalizedQuery.length() < 2) {
             return new PortfolioCardPage();
         }
 
-        Page<PortfolioProfile> entities = repo.searchByName(query.trim(), pageable);
+        Page<PortfolioProfile> entities = repo.searchByName(normalizedQuery, pageable);
 
         return new PortfolioCardPage(entities.map(this::toCardDTO));
     }

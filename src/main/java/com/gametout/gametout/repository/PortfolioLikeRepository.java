@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 public interface PortfolioLikeRepository extends JpaRepository<PortfolioLike, Long> {
     boolean existsByUserIdAndPortfolioId(Long userId, Long portfolioId);
     void deleteByUserIdAndPortfolioId(Long userId, Long portfolioId);
+    void deleteByPortfolioId(Long portfolioId);
 }

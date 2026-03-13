@@ -18,6 +18,7 @@ import com.gametout.gametout.repository.PortfolioSkillRepository;
 import com.gametout.gametout.repository.PortfolioSocialRepository;
 import com.gametout.gametout.entity.PortfolioLike;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -264,6 +265,49 @@ public class PortfolioService {
     @Transactional(readOnly = true)
     public long getTotalCount() {
         return portfolioRepo.count();
+    }
+
+    /**
+     * Admin listing with optional query/category/status filters.
+     */
+    @Transactional(readOnly = true)
+    public PortfolioPageResponse listForAdmin(
+            String query,
+            List<JobCategory> categories,
+            List<JobProfileStatus> statuses,
+            Pageable pageable) {
+        String normalizedQuery = (query == null || query.trim().isEmpty())
+                ? null
+                : query.trim();
+        List<JobCategory> cats = (categories == null || categories.isEmpty()) ? null : categories;
+        List<JobProfileStatus> stats = (statuses == null || statuses.isEmpty()) ? null : statuses;
+
+        Page<PortfolioProfile> page = portfolioRepo.findForAdmin(normalizedQuery, cats, stats, pageable);
+        Page<PortfolioResponseDTO> result = page.map(this::convertToDTO);
+        return new PortfolioPageResponse(result);
+    }
+
+    /**
+     * Hard delete a portfolio and all dependent records.
+     */
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "portfolio:list", allEntries = true),
+            @CacheEvict(value = "portfolio:list:all", allEntries = true),
+            @CacheEvict(value = "portfolio:filter", allEntries = true),
+            @CacheEvict(value = "portfolio:detail", allEntries = true),
+            @CacheEvict(value = "portfolio:search", allEntries = true),
+            @CacheEvict(value = "portfolio:count", allEntries = true)
+    })
+    public void adminDeletePortfolio(Long portfolioId) {
+        PortfolioProfile portfolio = portfolioRepo.findById(portfolioId)
+                .orElseThrow(() -> new RuntimeException("Portfolio not found"));
+
+        skillRepo.deleteByPortfolioId(portfolioId);
+        socialRepo.deleteByPortfolioId(portfolioId);
+        resumeRepo.deleteByPortfolioId(portfolioId);
+        likeRepo.deleteByPortfolioId(portfolioId);
+        portfolioRepo.delete(portfolio);
     }
 
     /**
