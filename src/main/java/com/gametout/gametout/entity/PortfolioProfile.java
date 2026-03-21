@@ -1,6 +1,7 @@
 package com.gametout.gametout.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gametout.gametout.enums.GameEngine;
 import com.gametout.gametout.enums.JobCategory;
 import com.gametout.gametout.enums.JobProfileStatus;
 import jakarta.persistence.*;
@@ -94,6 +95,9 @@ public class PortfolioProfile {
     @OneToMany(mappedBy = "portfolio")
     @BatchSize(size=20)
     private List<PortfolioSocialLink> socialLinks = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    private GameEngine enginePreference;
 
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt;

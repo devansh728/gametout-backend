@@ -1,5 +1,6 @@
 package com.gametout.gametout.dto;
 
+import com.gametout.gametout.enums.GameEngine;
 import com.gametout.gametout.enums.JobCategory;
 import com.gametout.gametout.enums.JobProfileStatus;
 import jakarta.validation.constraints.NotBlank;
@@ -36,7 +37,8 @@ public record PortfolioRequest(
     
     List<SkillDTO> skills,
     List<SocialLinkDTO> socials,
-    String resumeUrl
+    String resumeUrl,
+    GameEngine enginePreference
 ) {}
 
 

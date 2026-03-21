@@ -113,5 +113,48 @@ public interface PortfolioRepository extends JpaRepository<PortfolioProfile, Lon
         @Param("statuses") List<JobProfileStatus> statuses,
         Pageable pageable
     );
+
+    /**
+     * Advanced multi-field filtering with optional criteria:
+     * - jobCategories: multiple values with OR logic (matches ANY in list)
+     * - jobStatuses: multiple values with OR logic (matches ANY in list)
+     * - enginePreferences: multiple values with OR logic (matches ANY in list)
+     * - experience: range filter (minExp <= experienceYears <= maxExp)
+     * - location: contains search, case-insensitive
+     * - skillNames: case-insensitive matching (normalizes both stored and input to lowercase)
+     *
+     * All filters combined with AND logic (must satisfy ALL specified fields)
+     * Empty/null lists = don't filter on that field
+     * 
+     * Uses DISTINCT to avoid row duplication from skill joins
+     */
+    @Query("""
+        SELECT DISTINCT p FROM PortfolioProfile p
+        LEFT JOIN FETCH p.user
+        LEFT JOIN FETCH p.resume
+        LEFT JOIN p.skills ps
+        WHERE 
+            (:jobCategories IS NULL OR p.jobCategory IN :jobCategories)
+            AND (:jobStatuses IS NULL OR p.jobStatus IN :jobStatuses)
+            AND (:minExperience IS NULL OR p.experienceYears >= :minExperience)
+            AND (:maxExperience IS NULL OR p.experienceYears <= :maxExperience)
+            AND (:enginePreferences IS NULL OR p.enginePreference IN :enginePreferences)
+            AND (:location IS NULL OR LOWER(p.location) LIKE LOWER(CONCAT('%', :location, '%')))
+            AND (:skillNames IS NULL OR LOWER(ps.skillName) IN :skillNames)
+        ORDER BY 
+            CASE WHEN p.isPremium = true THEN 0 ELSE 1 END,
+            p.likesCount DESC,
+            p.createdAt DESC
+    """)
+    Page<PortfolioProfile> findByAdvancedFilters(
+        @Param("jobCategories") List<JobCategory> jobCategories,
+        @Param("jobStatuses") List<JobProfileStatus> jobStatuses,
+        @Param("minExperience") Integer minExperienceYears,
+        @Param("maxExperience") Integer maxExperienceYears,
+        @Param("enginePreferences") List<com.gametout.gametout.enums.GameEngine> enginePreferences,
+        @Param("location") String location,
+        @Param("skillNames") List<String> skillNames,
+        Pageable pageable
+    );
 }
 

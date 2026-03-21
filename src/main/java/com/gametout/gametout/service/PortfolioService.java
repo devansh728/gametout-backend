@@ -73,6 +73,7 @@ public class PortfolioService {
         portfolio.setProfilePhotoUrl(req.profilePhotoUrl());
         portfolio.setContactEmail(req.contactEmail());
         portfolio.setMobile(req.mobile());
+        portfolio.setEnginePreference(req.enginePreference());
 
         PortfolioProfile saved = portfolioRepo.save(portfolio);
 
@@ -344,6 +345,7 @@ public class PortfolioService {
                 .toList());
         dto.setSocials(
                 p.getSocialLinks().stream().map(s -> new SocialLinkDTO(s.getPlatform(), s.getUrl())).toList());
+        dto.setEnginePreference(p.getEnginePreference());
         return dto;
     }
 }

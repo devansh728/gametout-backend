@@ -1,5 +1,6 @@
 package com.gametout.gametout.dto;
 
+import com.gametout.gametout.enums.GameEngine;
 import com.gametout.gametout.enums.JobCategory;
 import com.gametout.gametout.enums.JobProfileStatus;
 import lombok.AllArgsConstructor;
@@ -53,6 +54,8 @@ public class PortfolioResponseDTO implements Serializable {
     private List<SkillDTO> skills;
 
     private List<SocialLinkDTO> socials;
+
+    private GameEngine enginePreference;
 }
 
 
