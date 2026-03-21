@@ -126,10 +126,11 @@ public interface PortfolioRepository extends JpaRepository<PortfolioProfile, Lon
      * All filters combined with AND logic (must satisfy ALL specified fields)
      * Empty/null lists = don't filter on that field
      * 
-     * Uses DISTINCT to avoid row duplication from skill joins
+     * Removed DISTINCT to avoid SELECT DISTINCT ORDER BY constraint violation in PostgreSQL
+     * Uses LEFT JOIN FETCH for eager loading instead of subqueries to maintain readability
      */
     @Query("""
-        SELECT DISTINCT p FROM PortfolioProfile p
+        SELECT p FROM PortfolioProfile p
         LEFT JOIN FETCH p.user
         LEFT JOIN FETCH p.resume
         LEFT JOIN p.skills ps
