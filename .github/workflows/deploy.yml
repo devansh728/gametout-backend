@@ -43,5 +43,7 @@ jobs:
           script: |
             cd ~/gametout
             docker compose pull
-            docker compose down
-            docker compose up -d
+            docker compose up -d --no-deps --build gametout-app 
+            sleep 10  # Wait for connections to initialize
+            docker compose restart gametout-app  
+

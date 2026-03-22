@@ -84,6 +84,7 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.GET,"/api/headlines").permitAll()
                                                 .requestMatchers(HttpMethod.POST,"/api/headlines").authenticated()
                                                 .requestMatchers(HttpMethod.DELETE,"/api/headlines/**").authenticated()
+                                                .requestMatchers(HttpMethod.GET,"/api/portfolio/refresh-connections").permitAll()
                                                 .anyRequest().permitAll())
                                 // Firebase filter runs before UsernamePasswordAuthenticationFilter
                                 .addFilterBefore(

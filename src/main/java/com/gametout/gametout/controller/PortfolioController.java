@@ -10,6 +10,8 @@ import com.gametout.gametout.dto.AuthenticatedUser;
 import com.gametout.gametout.dto.PortfolioPageResponse;
 import com.gametout.gametout.service.PortfolioService;
 import com.gametout.gametout.service.SubscriptionService;
+import com.zaxxer.hikari.HikariDataSource;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.cache.annotation.Cacheable;
+import javax.sql.DataSource;
 
 import java.util.List;
 import java.util.Map;
@@ -28,6 +31,8 @@ public class PortfolioController {
 
     private final PortfolioService service;
     private final SubscriptionService subscriptionService;
+
+    private final DataSource dataSource;
 
     /**
      * Get total count of portfolios
@@ -128,5 +133,14 @@ public class PortfolioController {
     public void like(@PathVariable Long id, Authentication auth) {
         UserAccount user = ((AuthenticatedUser) auth.getPrincipal()).getUser();
         service.like(id, user);
+    }
+
+    @GetMapping("/refresh-connections")
+    public String refreshConnections() {
+        if (dataSource instanceof HikariDataSource) {
+            ((HikariDataSource) dataSource).getHikariPoolMXBean().softEvictConnections();
+            return "Connections evicted. Retry your request.";
+        }
+        return "Not a HikariDataSource";
     }
 }
