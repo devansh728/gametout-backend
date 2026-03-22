@@ -13,6 +13,9 @@
 ALTER TABLE portfolio_skills 
   ALTER COLUMN skill_name TYPE VARCHAR(255) USING skill_name::VARCHAR(255);
 
+
+--Testing
+
 -- Alter portfolio_profiles table
 ALTER TABLE portfolio_profiles 
   ALTER COLUMN location TYPE VARCHAR(255) USING location::VARCHAR(255);
