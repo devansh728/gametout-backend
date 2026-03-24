@@ -129,19 +129,45 @@ public interface PortfolioRepository extends JpaRepository<PortfolioProfile, Lon
      * Removed DISTINCT to avoid SELECT DISTINCT ORDER BY constraint violation in PostgreSQL
      * Uses LEFT JOIN FETCH for eager loading instead of subqueries to maintain readability
      */
+    // @Query("""
+    //     SELECT p FROM PortfolioProfile p
+    //     LEFT JOIN FETCH p.user
+    //     LEFT JOIN FETCH p.resume
+    //     LEFT JOIN p.skills ps
+    //     WHERE 
+    //         (:jobCategories IS NULL OR p.jobCategory IN :jobCategories)
+    //         AND (:jobStatuses IS NULL OR p.jobStatus IN :jobStatuses)
+    //         AND (:minExperience IS NULL OR p.experienceYears >= :minExperience)
+    //         AND (:maxExperience IS NULL OR p.experienceYears <= :maxExperience)
+    //         AND (:enginePreferences IS NULL OR p.enginePreference IN :enginePreferences)
+    //         AND (:location IS NULL OR LOWER(p.location) LIKE LOWER(CONCAT('%', :location, '%')))
+    //         AND (:skillNames IS NULL OR LOWER(ps.skillName) IN :skillNames)
+    //     ORDER BY 
+    //         CASE WHEN p.isPremium = true THEN 0 ELSE 1 END,
+    //         p.likesCount DESC,
+    //         p.createdAt DESC
+    // """)
+    // Page<PortfolioProfile> findByAdvancedFilters(
+    //     @Param("jobCategories") List<JobCategory> jobCategories,
+    //     @Param("jobStatuses") List<JobProfileStatus> jobStatuses,
+    //     @Param("minExperience") Integer minExperienceYears,
+    //     @Param("maxExperience") Integer maxExperienceYears,
+    //     @Param("enginePreferences") List<com.gametout.gametout.enums.GameEngine> enginePreferences,
+    //     @Param("location") String location,
+    //     @Param("skillNames") List<String> skillNames,
+    //     Pageable pageable
+    // );
+
     @Query("""
         SELECT p FROM PortfolioProfile p
         LEFT JOIN FETCH p.user
         LEFT JOIN FETCH p.resume
-        LEFT JOIN p.skills ps
         WHERE 
             (:jobCategories IS NULL OR p.jobCategory IN :jobCategories)
             AND (:jobStatuses IS NULL OR p.jobStatus IN :jobStatuses)
             AND (:minExperience IS NULL OR p.experienceYears >= :minExperience)
             AND (:maxExperience IS NULL OR p.experienceYears <= :maxExperience)
             AND (:enginePreferences IS NULL OR p.enginePreference IN :enginePreferences)
-            AND (:location IS NULL OR LOWER(p.location) LIKE LOWER(CONCAT('%', :location, '%')))
-            AND (:skillNames IS NULL OR LOWER(ps.skillName) IN :skillNames)
         ORDER BY 
             CASE WHEN p.isPremium = true THEN 0 ELSE 1 END,
             p.likesCount DESC,
@@ -153,8 +179,6 @@ public interface PortfolioRepository extends JpaRepository<PortfolioProfile, Lon
         @Param("minExperience") Integer minExperienceYears,
         @Param("maxExperience") Integer maxExperienceYears,
         @Param("enginePreferences") List<com.gametout.gametout.enums.GameEngine> enginePreferences,
-        @Param("location") String location,
-        @Param("skillNames") List<String> skillNames,
         Pageable pageable
     );
 }

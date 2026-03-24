@@ -52,11 +52,9 @@ public class AdvancedFilterService {
         log.debug("Applying advanced filters: categories={}, statuses={}, skills={}, minExp={}, maxExp={}, engines={}, location={}",
             request.getJobCategories(),
             request.getJobStatuses(),
-            request.getSkillNames(),
             request.getMinExperienceYears(),
             request.getMaxExperienceYears(),
-            request.getEnginePreferences(),
-            request.getLocation()
+            request.getEnginePreferences()
         );
 
         // Validate request
@@ -71,13 +69,13 @@ public class AdvancedFilterService {
         List<GameEngine> enginePreferences = isEmpty(request.getEnginePreferences()) ? null : request.getEnginePreferences();
         
         // Normalize skill names to lowercase for case-insensitive matching
-        List<String> skillNames = normalizeSkillNames(request.getSkillNames());
-        skillNames = isEmpty(skillNames) ? null : skillNames;
+        // List<String> skillNames = normalizeSkillNames(request.getSkillNames());
+        // skillNames = isEmpty(skillNames) ? null : skillNames;
         
         // Normalize location to trim whitespace and handle null
-        String location = (request.getLocation() == null || request.getLocation().trim().isEmpty()) 
-            ? null 
-            : request.getLocation().trim();
+        // String location = (request.getLocation() == null || request.getLocation().trim().isEmpty()) 
+        //     ? null 
+        //     : request.getLocation().trim();
 
         // Execute query with all filters
         Page<PortfolioProfile> page = portfolioRepository.findByAdvancedFilters(
@@ -86,8 +84,6 @@ public class AdvancedFilterService {
             request.getMinExperienceYears(),
             request.getMaxExperienceYears(),
             enginePreferences,
-            location,
-            skillNames,
             pageable
         );
 

@@ -31,8 +31,8 @@ public class AdvancedFilterRequest {
     @JsonProperty("jobStatuses")
     private List<JobProfileStatus> jobStatuses;  // null/empty = no filter
     
-    @JsonProperty("skillNames")
-    private List<String> skillNames;  // null/empty = no filter, case-insensitive search
+    // @JsonProperty("skillNames")
+    // private List<String> skillNames;  // null/empty = no filter, case-insensitive search
     
     @JsonProperty("minExperienceYears")
     private Integer minExperienceYears;  // null = no lower limit
@@ -43,8 +43,8 @@ public class AdvancedFilterRequest {
     @JsonProperty("enginePreferences")
     private List<GameEngine> enginePreferences;  // null/empty = no filter
     
-    @JsonProperty("location")
-    private String location;  // null = no filter, contains search (case-insensitive)
+    // @JsonProperty("location")
+    // private String location;  // null = no filter, contains search (case-insensitive)
     
     @JsonProperty("page")
     private int page = 0;

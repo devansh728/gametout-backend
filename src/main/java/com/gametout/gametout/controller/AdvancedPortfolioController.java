@@ -62,7 +62,8 @@ public class AdvancedPortfolioController {
             log.info("Processing advanced filter request with {} job categories, {} statuses, {} skills",
                 request.getJobCategories() != null ? request.getJobCategories().size() : 0,
                 request.getJobStatuses() != null ? request.getJobStatuses().size() : 0,
-                request.getSkillNames() != null ? request.getSkillNames().size() : 0
+                request.getEnginePreferences() != null ? request.getEnginePreferences().size() : 0
+
             );
 
             PortfolioPageResponse response = advancedFilterService.applyAdvancedFilters(request);
